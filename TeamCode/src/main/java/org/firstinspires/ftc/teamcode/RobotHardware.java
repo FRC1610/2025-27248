@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.drivers.GoBildaPinpointDriver;
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import org.firstinspires.ftc.teamcode.drivers.rgbIndicator;
 import org.firstinspires.ftc.teamcode.drivers.rgbIndicator.LEDColors;
 
@@ -41,7 +41,7 @@ public class RobotHardware {
     }
 
     Limelight3A limelight = null;
-    GoBildaPinpointDriver odo = null; // Declare OpMode member for the Odometry Computer
+    GoBildaPinpointDriver pinpoint = null; // Declare OpMode member for the Odometry Computer
     rgbIndicator rgbIndicatorMain = null;
     private DigitalChannel allianceButton = null;
 
@@ -72,12 +72,12 @@ public class RobotHardware {
 
         ///GoBilda Odometry Pod Setup
         //Deploy to Control Hub to make Odometry Pod show in hardware selection list
-        odo = myOpMode.hardwareMap.get(GoBildaPinpointDriver.class, "odo");
-        odo.setOffsets(-100, -65, DistanceUnit.MM);
+        pinpoint = myOpMode.hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
+        pinpoint.setOffsets(-100, -65, DistanceUnit.MM);
         //odo.setOffsets(-100.0, -65.0);
-        odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
-        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.REVERSED);
-        odo.resetPosAndIMU();
+        pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
+        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.REVERSED);
+        pinpoint.resetPosAndIMU();
 
         ///Drive Motor Setup
         // Define and Initialize Drive Motors
@@ -139,8 +139,8 @@ public class RobotHardware {
         myOpMode.telemetry.addData("Status", "Initialized");
         //myOpMode.telemetry.addData("X offset", odo.getXOffset());
         //myOpMode.telemetry.addData("Y offset", odo.getYOffset());
-        myOpMode.telemetry.addData("Device Version Number:", odo.getDeviceVersion());
-        myOpMode.telemetry.addData("Device Scalar", odo.getYawScalar());
+        myOpMode.telemetry.addData("Device Version Number:", pinpoint.getDeviceVersion());
+        myOpMode.telemetry.addData("Device Scalar", pinpoint.getYawScalar());
         myOpMode.telemetry.update();
     }
 

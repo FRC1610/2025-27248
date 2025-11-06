@@ -9,6 +9,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import org.firstinspires.ftc.teamcode.StateMachine.State;
 import org.firstinspires.ftc.teamcode.drivers.GoBildaPinpointDriver;
 
@@ -62,19 +63,24 @@ public class Competition extends LinearOpMode {
             }
 
             //Odometry
-            robot.odo.update(); //Update odometry
+            robot.pinpoint.update(); //Update odometry
             double newTime = getRuntime();
             double loopTime = newTime - oldTime;
             double frequency = 1 / loopTime;
             oldTime = newTime;
-            Pose2D pos = robot.odo.getPosition();
+            Pose2D pos = robot.pinpoint.getPosition();
             String data = String.format(Locale.US, "{X: %.3f, Y: %.3f, H: %.3f}", pos.getX(DistanceUnit.INCH), pos.getY(DistanceUnit.INCH), pos.getHeading(AngleUnit.DEGREES));
             telemetry.addData("Position", data);
-            Pose2D vel = robot.odo.getVelocity();
-            String velocity = String.format(Locale.US, "{XVel: %.3f, YVel: %.3f, HVel: %.3f}", vel.getX(DistanceUnit.INCH), vel.getY(DistanceUnit.INCH), vel.getHeading(AngleUnit.DEGREES));
-            telemetry.addData("Velocity", velocity);
-            telemetry.addData("Status", robot.odo.getDeviceStatus());
-            telemetry.addData("Pinpoint Frequency", robot.odo.getFrequency()); //prints/gets the current refresh rate of the Pinpoint
+            double VelX = robot.pinpoint.getVelX(DistanceUnit.MM);
+            double VelY = robot.pinpoint.getVelY(DistanceUnit.MM);
+            double headingVel = robot.pinpoint.getHeadingVelocity(UnnormalizedAngleUnit.DEGREES);
+
+            telemetry.addData("X Vel (mm/s)", VelX);
+            telemetry.addData("Y Vel (mm/s)", VelY);
+            telemetry.addData("Heading Vel (rad/s)", headingVel);
+
+            telemetry.addData("Status", robot.pinpoint.getDeviceStatus());
+            telemetry.addData("Pinpoint Frequency", robot.pinpoint.getFrequency()); //prints/gets the current refresh rate of the Pinpoint
             telemetry.addData("REV Hub Frequency: ", frequency); //prints the control system refresh rate
 
             ///MECANUM DRIVE
