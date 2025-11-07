@@ -11,7 +11,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import org.firstinspires.ftc.teamcode.StateMachine.State;
-import org.firstinspires.ftc.teamcode.drivers.GoBildaPinpointDriver;
+//import org.firstinspires.ftc.teamcode.drivers.GoBildaPinpointDriver;
 
 import java.util.Locale;
 
@@ -19,7 +19,7 @@ import java.util.Locale;
 @TeleOp(name = "Competition Main", group = "TeleOp")
 public class Competition extends LinearOpMode {
 
-    GoBildaPinpointDriver odo; // Declare OpMode member for the Odometry Computer
+    //GoBildaPinpointDriver odo; // Declare OpMode member for the Odometry Computer
 
     RobotHardware robot = new RobotHardware(this);
 
@@ -39,10 +39,10 @@ public class Competition extends LinearOpMode {
         double y;
         double rotation;
 
-        //IntakeDirection
-        boolean RightBumperPressed = false;
         boolean aPressed = false;
-        boolean leftBumperPressed = false;
+        boolean bPressed = false;
+        boolean xPressed = false;
+        boolean yPressed = false;
 
         robot.init();  //Hardware configuration in RobotHardware.java
 
@@ -124,6 +124,38 @@ public class Competition extends LinearOpMode {
                 robot.rotateTurret(RobotHardware.TurretDirection.STOP);
             }
 
+            // --- Toggle Close Shot ---
+            if (gamepad1.a && !aPressed) {
+                robot.toggleFlywheel(Constants.launcherClose);
+                aPressed = true;
+            } else if (!gamepad1.a) {
+                aPressed = false;
+            }
+
+            // --- Toggle Far Shot ---
+            if (gamepad1.b && !bPressed) {
+                robot.toggleFlywheel(Constants.launcherFar);
+                bPressed = true;
+            } else if (!gamepad1.b) {
+                bPressed = false;
+            }
+
+            // --- Decrease RPM ---
+            if (gamepad1.x && !xPressed) {
+                robot.adjustRPM(-100);
+                xPressed = true;
+            } else if (!gamepad1.x) {
+                xPressed = false;
+            }
+
+            // --- Increase RPM ---
+            if (gamepad1.y && !yPressed) {
+                robot.adjustRPM(100);
+                yPressed = true;
+            } else if (!gamepad1.y) {
+                yPressed = false;
+            }
+
             ///STATE CHANGE BUTTON SETUP
             /// START
             if (gamepad1.start) {
@@ -137,7 +169,9 @@ public class Competition extends LinearOpMode {
             StateMachine.update(); //Update state machine in case of long running tasks
             telemetry.addData("State", StateMachine.getState());
             telemetry.addData("Intake Vel", robot.intake.getVelocity());
-
+            telemetry.addData("Target RPM", robot.getTargetRPM());
+            telemetry.addData("Current RPM", "%.1f", robot.getCurrentRPM());
+            telemetry.addData("Flywheel On", robot.isFlywheelOn());
             telemetry.update();
         }
     }

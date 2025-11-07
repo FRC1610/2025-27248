@@ -7,6 +7,10 @@ public class Constants {
     public static final double intakeForwardPower = 0.75;
     public static final double intakeReversePower = -0.75;
 
+    /// LAUNCHER SETPOINTS
+    public static final int launcherClose = 2500;
+    public static final int launcherFar = 4500;
+
     ///AUTONOMOUS SETPOINTS
 
     /// TURRET HOOD POSITIONS

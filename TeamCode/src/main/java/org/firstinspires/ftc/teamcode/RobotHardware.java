@@ -50,6 +50,11 @@ public class RobotHardware {
     GoBildaPinpointDriver pinpoint = null; // Declare OpMode member for the Odometry Computer
     rgbIndicator rgbIndicatorMain = null;
     private DigitalChannel allianceButton = null;
+    private double targetRPM = 0;
+    private boolean flywheelOn = false;
+
+    // Example: GoBilda 5202/5203/5204 encoder = 28 ticks/rev
+    private static final double TICKS_PER_REV = 28.0;
 
     // Define a constructor that allows the OpMode to pass a reference to itself.
     public RobotHardware(LinearOpMode opmode) {
@@ -214,6 +219,55 @@ public class RobotHardware {
         leftBack.setPower(leftBackPower);
         rightBack.setPower(rightBackPower);
     }
+
+    public double getTargetRPM() {
+        return targetRPM;
+    }
+
+    public boolean isFlywheelOn() {
+        return flywheelOn;
+    }
+
+    public void toggleFlywheel(double rpm) {
+        if (flywheelOn && Math.abs(targetRPM - rpm) < 10) {
+            stopFlywheel();
+        } else {
+            setTargetRPM(rpm);
+        }
+    }
+
+    public void stopFlywheel() {
+        launcher.setVelocity(0);
+        targetRPM = 0;
+        flywheelOn = false;
+    }
+
+    public void setTargetRPM(double rpm) {
+        targetRPM = rpm;
+        flywheelOn = rpm > 0;
+
+        if (flywheelOn) {
+            double ticksPerSecond = rpmToTicksPerSecond(rpm);
+            launcher.setVelocity(ticksPerSecond);
+        } else {
+            launcher.setVelocity(0);
+        }
+    }
+
+    public void adjustRPM(double delta) {
+        if (flywheelOn) {
+            setTargetRPM(Math.max(0, targetRPM + delta));
+        }
+    }
+
+    private double rpmToTicksPerSecond(double rpm) {
+        return (rpm * TICKS_PER_REV) / 60.0;
+    }
+
+    public double getCurrentRPM() {
+        return (launcher.getVelocity() * 60.0) / TICKS_PER_REV;
+    }
+
 
     public void rotateTurret(TurretDirection Direction){
         if (Direction == TurretDirection.LEFT){
