@@ -102,8 +102,8 @@ public class Competition extends LinearOpMode {
 
             ///INTAKE
             //IntakeDirection
-            boolean IntakeForwardPressed = gamepad1.dpad_right; //Check if button pressed
-            boolean IntakeReversePressed = gamepad1.dpad_left; //Check if button pressed
+            boolean IntakeForwardPressed = gamepad1.right_bumper; //Check if button pressed
+            boolean IntakeReversePressed = gamepad1.left_bumper; //Check if button pressed
 
             if (IntakeForwardPressed){
                 robot.runIntake(RobotHardware.IntakeDirection.IN);
@@ -113,8 +113,18 @@ public class Competition extends LinearOpMode {
                 robot.runIntake(RobotHardware.IntakeDirection.STOP);
             }
 
+            boolean TurretLeftPressed = gamepad1.dpad_left;
+            boolean TurretRightPressed = gamepad1.dpad_right;
+
+            if (TurretLeftPressed){
+                robot.rotateTurret(RobotHardware.TurretDirection.LEFT);
+            } else if (TurretRightPressed) {
+                robot.rotateTurret(RobotHardware.TurretDirection.RIGHT);
+            } else {
+                robot.rotateTurret(RobotHardware.TurretDirection.STOP);
+            }
+
             ///STATE CHANGE BUTTON SETUP
-            //TODO Maybe rearrange this
             /// START
             if (gamepad1.start) {
                 StateMachine.setState(State.HOME);  //START = HOME Position
@@ -126,9 +136,7 @@ public class Competition extends LinearOpMode {
 
             StateMachine.update(); //Update state machine in case of long running tasks
             telemetry.addData("State", StateMachine.getState());
-
-
-            telemetry.addData("Elevator Pos", robot.intake.getCurrentPosition());
+            telemetry.addData("Intake Vel", robot.intake.getVelocity());
 
             telemetry.update();
         }

@@ -40,6 +40,12 @@ public class RobotHardware {
         STOP
     }
 
+    public enum TurretDirection {
+        LEFT,
+        RIGHT,
+        STOP
+    }
+
     Limelight3A limelight = null;
     GoBildaPinpointDriver pinpoint = null; // Declare OpMode member for the Odometry Computer
     rgbIndicator rgbIndicatorMain = null;
@@ -207,6 +213,16 @@ public class RobotHardware {
         rightFront.setPower(rightFrontPower);
         leftBack.setPower(leftBackPower);
         rightBack.setPower(rightBackPower);
+    }
+
+    public void rotateTurret(TurretDirection Direction){
+        if (Direction == TurretDirection.LEFT){
+            turret.setPosition(0.0);
+        } else if (Direction == TurretDirection.RIGHT) {
+            turret.setPosition(1.0);
+        } else if (Direction == TurretDirection.STOP) {
+            turret.setPosition(0.5);
+        }
     }
 
     public void runIntake(IntakeDirection Direction) {
