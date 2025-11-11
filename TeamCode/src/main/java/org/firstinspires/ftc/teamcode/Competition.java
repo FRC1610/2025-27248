@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.StateMachine.State;
 
 import java.util.Locale;
 
-@Disabled
+//@Disabled
 @TeleOp(name = "Competition Main", group = "TeleOp")
 public class Competition extends LinearOpMode {
 

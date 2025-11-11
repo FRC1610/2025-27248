@@ -118,14 +118,15 @@ public class RobotHardware {
         intake.setDirection(DcMotor.Direction.REVERSE);
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intake.setTargetPositionTolerance(5);
+        intake.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         intake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        intake.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         //LAUNCHER
         launcher = myOpMode.hardwareMap.get(DcMotorEx.class,"launcher");
         launcher.setDirection(DcMotor.Direction.REVERSE);
         launcher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        launcher.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         // Define and initialize ALL installed servos.
 
