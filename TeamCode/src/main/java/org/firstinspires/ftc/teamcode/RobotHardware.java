@@ -118,8 +118,8 @@ public class RobotHardware {
         intake.setDirection(DcMotor.Direction.REVERSE);
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intake.setTargetPositionTolerance(5);
-        intake.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        intake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //intake.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        //intake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         //LAUNCHER
         launcher = myOpMode.hardwareMap.get(DcMotorEx.class,"launcher");
