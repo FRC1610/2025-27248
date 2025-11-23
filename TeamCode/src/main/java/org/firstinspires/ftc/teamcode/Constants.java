@@ -8,8 +8,12 @@ public class Constants {
     public static final double intakeReversePower = -0.75;
 
     /// LAUNCHER SETPOINTS
-    public static final int launcherClose = 2500;
-    public static final int launcherFar = 4500;
+    public static final int launcherClose = 1500;
+    public static final int launcherFar = 2000;
+
+    ///  LIFTER SETPOINTS
+    public static final double lifterUp = 1.0;
+    public static final double lifterDown = 0.0;
 
     ///AUTONOMOUS SETPOINTS
 
@@ -18,7 +22,9 @@ public class Constants {
     public static final double hoodMaximum = 1.0;
 
     ///  TURRET POSITIONS
-    public static final double turretHome = 0.0;
+    public static final int turretHome = 0;
+    public static final double turretMaxLeft = 0;
+    public static final double turretMaxRight = 0;
 
     ///  KICKER POSITIONS
     public static final double kickerDown = 0.0;

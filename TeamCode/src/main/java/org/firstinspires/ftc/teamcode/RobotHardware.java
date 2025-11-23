@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 //import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -28,7 +29,7 @@ public class RobotHardware {
     public DcMotor rightBack;
     public DcMotorEx intake;
     public DcMotorEx launcher;
-    public Servo turret;
+    public DcMotorEx turret;
     public boolean allianceColorRed = false;
     public boolean allianceColorBlue = false;
     private AnalogInput turretPos;
@@ -114,32 +115,33 @@ public class RobotHardware {
         intake = myOpMode.hardwareMap.get(DcMotorEx.class,"intake");
         //intake.setDirection(DcMotor.Direction.REVERSE);
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        intake.setTargetPositionTolerance(5);
+        //intake.setTargetPositionTolerance(5);
         //intake.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         //intake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         //LAUNCHER
         launcher = myOpMode.hardwareMap.get(DcMotorEx.class,"launcher");
-        launcher.setDirection(DcMotor.Direction.REVERSE);
+        launcher.setDirection(DcMotor.Direction.FORWARD);
         launcher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launcher.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
+        //TURRET
+        turret = myOpMode.hardwareMap.get(DcMotorEx.class, "turret");
+        turret.setDirection(DcMotorSimple.Direction.FORWARD);
+        turret.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        turret.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
         // Define and initialize ALL installed servos.
 
         Servo spindexer = myOpMode.hardwareMap.get(Servo.class, "spindexer");
-
-        turret = myOpMode.hardwareMap.get(Servo.class, "turret");
-        turret.setPosition(Constants.turretHome);
 
         Servo hood = myOpMode.hardwareMap.get(Servo.class, "hood");
         hood.setPosition(Constants.hoodMinimum);
 
         Servo kicker = myOpMode.hardwareMap.get(Servo.class, "kicker");
         kicker.setPosition(Constants.kickerDown);
-
-        // Servo Feedback Setup
-        turretPos = myOpMode.hardwareMap.get(AnalogInput.class, "turretPos");
 
         //Limelight Setup
         limelight = myOpMode.hardwareMap.get(Limelight3A.class, "limelight");
@@ -269,14 +271,13 @@ public class RobotHardware {
         return (launcher.getVelocity() * 60.0) / TICKS_PER_REV;
     }
 
-
     public void rotateTurret(TurretDirection Direction){
         if (Direction == TurretDirection.LEFT){
-            turret.setPosition(0.0);
+            turret.setTargetPosition(0);
         } else if (Direction == TurretDirection.RIGHT) {
-            turret.setPosition(1.0);
+            turret.setTargetPosition(1);
         } else if (Direction == TurretDirection.STOP) {
-            turret.setPosition(0.5);
+            turret.setTargetPosition(0);
         }
     }
 
