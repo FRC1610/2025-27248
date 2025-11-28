@@ -102,7 +102,9 @@ public class FlywheelController {
                     Position metersPosition = position.toUnit(DistanceUnit.METER);
                     double xMeters = metersPosition.x;
                     double yMeters = metersPosition.y;
-                    double distanceMeters = Math.hypot(xMeters, yMeters);
+                    double zMeters = metersPosition.z;
+                    // Use full 3D translation magnitude to avoid underestimating range.
+                    double distanceMeters = Math.sqrt(xMeters * xMeters + yMeters * yMeters + zMeters * zMeters);
                     double distanceFeet = distanceMeters * 3.28084;
 
                     double clampedDistance = Range.clip(distanceFeet, MID_ZONE_DISTANCE_FT, FAR_ZONE_DISTANCE_FT);
