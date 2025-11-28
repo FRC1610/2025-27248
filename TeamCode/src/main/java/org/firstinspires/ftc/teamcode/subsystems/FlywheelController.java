@@ -81,13 +81,6 @@ public class FlywheelController {
             return;
         }
 
-        // Safety checks for hardware
-        if (robot.limelight == null) {
-            telemetry.addLine("Limelight is NULL!");
-            stop();
-            return;
-        }
-
         if (robot.turret == null) {
             telemetry.addLine("ERROR: turret motor is NULL!");
             return;
@@ -95,7 +88,7 @@ public class FlywheelController {
 
         double rpm = Constants.DEFAULT_RPM;
 
-        LLResult result = robot.limelight.getLatestResult();
+        LLResult result = robot.getLatestLimelightResult();
         if (result != null && result.isValid()) {
             List<LLResultTypes.FiducialResult> fiducials = result.getFiducialResults();
             if (fiducials != null && !fiducials.isEmpty()) {
@@ -104,8 +97,9 @@ public class FlywheelController {
                 Position position = pose != null ? pose.getPosition() : null;
 
                 if (position != null) {
-                    double xMeters = position.getX(DistanceUnit.METER);
-                    double yMeters = position.getY(DistanceUnit.METER);
+                    Position metersPosition = position.toUnit(DistanceUnit.METER);
+                    double xMeters = metersPosition.x;
+                    double yMeters = metersPosition.y;
                     double distanceMeters = Math.hypot(xMeters, yMeters);
                     double distanceFeet = distanceMeters * 3.28084;
 

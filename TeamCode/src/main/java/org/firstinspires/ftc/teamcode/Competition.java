@@ -85,8 +85,10 @@ public class Competition extends LinearOpMode {
 
         while (opModeIsActive()) {
 
+            robot.refreshLimelightResult();
+
             //Limelight Data
-            LLResult result = robot.limelight.getLatestResult();
+            LLResult result = robot.getLatestLimelightResult();
             if (result != null) {
                 if (result.isValid()) {
                     Pose3D botpose = result.getBotpose();
@@ -291,11 +293,7 @@ public class Competition extends LinearOpMode {
     }
 
     private boolean isAimedAtTarget() {
-        if (robot.limelight == null) {
-            return false;
-        }
-
-        LLResult result = robot.limelight.getLatestResult();
+        LLResult result = robot.getLatestLimelightResult();
         if (result == null || !result.isValid()) {
             return false;
         }

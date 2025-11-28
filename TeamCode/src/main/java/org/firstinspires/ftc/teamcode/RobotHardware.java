@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import com.qualcomm.hardware.limelightvision.LLResult;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import org.firstinspires.ftc.teamcode.drivers.rgbIndicator;
@@ -57,6 +58,7 @@ public class RobotHardware {
 
     // Example: GoBilda 5202/5203/5204 encoder = 28 ticks/rev
     private static final double TICKS_PER_REV = 28.0;
+    private LLResult latestLimelightResult;
 
     // Define a constructor that allows the OpMode to pass a reference to itself.
     public RobotHardware(LinearOpMode opmode) {
@@ -165,6 +167,9 @@ public class RobotHardware {
         selectAllianceLimelightPipeline();
         limelight.start();
 
+        // Prime cached Limelight data
+        refreshLimelightResult();
+
         //Color Sensor Setup
         color1 = myOpMode.hardwareMap.get(RevColorSensorV3.class, "color1");
         distance1 = myOpMode.hardwareMap.get(DistanceSensor.class, "color1");
@@ -176,6 +181,24 @@ public class RobotHardware {
         myOpMode.telemetry.addData("Device Version Number:", pinpoint.getDeviceVersion());
         myOpMode.telemetry.addData("Device Scalar", pinpoint.getYawScalar());
         myOpMode.telemetry.update();
+    }
+
+    /**
+     * Fetch and cache the most recent Limelight result so subsystems can reuse
+     * the same frame data instead of polling the camera independently.
+     */
+    public void refreshLimelightResult() {
+        if (limelight == null) {
+            latestLimelightResult = null;
+            myOpMode.telemetry.addLine("ERROR: Limelight not initialized");
+            return;
+        }
+
+        latestLimelightResult = limelight.getLatestResult();
+    }
+
+    public LLResult getLatestLimelightResult() {
+        return latestLimelightResult;
     }
 
     public void selectAllianceLimelightPipeline() {

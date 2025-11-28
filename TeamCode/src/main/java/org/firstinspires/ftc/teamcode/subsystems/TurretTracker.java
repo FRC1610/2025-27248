@@ -28,12 +28,6 @@ public class TurretTracker {
     public void update() {
 
         // SAFETY: limelight not initialized
-        if (robot.limelight == null) {
-            robot.turret.setPower(0);
-            telemetry.addLine("Limelight is NULL!");
-            return;
-        }
-
         // SAFETY: turret not initialized
         if (robot.turret == null) {
             telemetry.addLine("ERROR: turret motor is NULL!");
@@ -41,7 +35,7 @@ public class TurretTracker {
         }
 
         // Get latest frame
-        LLResult result = robot.limelight.getLatestResult();
+        LLResult result = robot.getLatestLimelightResult();
 
         // SAFETY: result missing or invalid
         if (result == null || !result.isValid()) {
