@@ -1,0 +1,147 @@
+package org.firstinspires.ftc.teamcode.subsystems;
+
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.util.Range;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.teamcode.Constants;
+import org.firstinspires.ftc.teamcode.RobotHardware;
+
+import java.util.List;
+
+/**
+ * Flywheel controller that maps Limelight AprilTag distance to RPM setpoints.
+ * The Limelight pipeline is selected in {@link RobotHardware#selectAllianceLimelightPipeline()}
+ * so the correct tag is isolated for the current alliance. The turret motor in
+ * {@link RobotHardware#turret} is used to spin the flywheel.
+ */
+public class FlywheelController {
+
+    private static final double TICKS_PER_REV = 28.0;
+
+    private static final double MID_ZONE_DISTANCE_FT = 3.5;
+    private static final double FAR_ZONE_DISTANCE_FT = 5.5;
+
+    private final RobotHardware robot;
+    private final Telemetry telemetry;
+    private boolean flywheelEnabled = false;
+    private double targetRpm = 0.0;
+
+    public FlywheelController(RobotHardware robot,
+                              Telemetry telemetry) {
+        this.robot = robot;
+        this.telemetry = telemetry;
+    }
+
+    /**
+     * Toggle the flywheel on/off using the turret motor.
+     */
+    public void toggle() {
+        flywheelEnabled = !flywheelEnabled;
+
+        if (flywheelEnabled) {
+            setFlywheelRpm(Constants.DEFAULT_RPM);
+        } else {
+            stop();
+        }
+    }
+
+    public boolean isEnabled() {
+        return flywheelEnabled;
+    }
+
+    public double getTargetRpm() {
+        return targetRpm;
+    }
+
+    public double getCurrentRpm() {
+        DcMotorEx turretMotor = robot.turret;
+        if (turretMotor == null) {
+            telemetry.addLine("ERROR: turret motor is NULL!");
+            return 0.0;
+        }
+
+        return (turretMotor.getVelocity() * 60.0) / TICKS_PER_REV;
+    }
+
+    public boolean isAtSpeed(double tolerance) {
+        return Math.abs(getCurrentRpm() - targetRpm) <= tolerance;
+    }
+
+    /**
+     * Call every loop to update the RPM based on the detected AprilTag.
+     */
+    public void update() {
+        if (!flywheelEnabled) {
+            return;
+        }
+
+        // Safety checks for hardware
+        if (robot.limelight == null) {
+            telemetry.addLine("Limelight is NULL!");
+            stop();
+            return;
+        }
+
+        if (robot.turret == null) {
+            telemetry.addLine("ERROR: turret motor is NULL!");
+            return;
+        }
+
+        double rpm = Constants.DEFAULT_RPM;
+
+        LLResult result = robot.limelight.getLatestResult();
+        if (result != null && result.isValid()) {
+            List<LLResultTypes.FiducialResult> fiducials = result.getFiducialResults();
+            if (fiducials != null && !fiducials.isEmpty()) {
+                LLResultTypes.FiducialResult fid = fiducials.get(0);
+                Pose3D pose = fid.getRobotPose_TargetSpace();
+
+                double xMeters = pose.getX(DistanceUnit.METER);
+                double yMeters = pose.getY(DistanceUnit.METER);
+                double distanceMeters = Math.hypot(xMeters, yMeters);
+                double distanceFeet = DistanceUnit.convert(distanceMeters, DistanceUnit.METER, DistanceUnit.FOOT);
+
+                double clampedDistance = Range.clip(distanceFeet, MID_ZONE_DISTANCE_FT, FAR_ZONE_DISTANCE_FT);
+                double distanceRatio = (clampedDistance - MID_ZONE_DISTANCE_FT) / (FAR_ZONE_DISTANCE_FT - MID_ZONE_DISTANCE_FT);
+                rpm = Constants.LAUNCH_ZONE_MID_RPM
+                        + distanceRatio * (Constants.LAUNCH_ZONE_FAR_RPM - Constants.LAUNCH_ZONE_MID_RPM);
+
+                telemetry.addData("Flywheel Distance (ft)", "%.2f", distanceFeet);
+                telemetry.addData("Flywheel Target RPM", rpm);
+            }
+        }
+
+        setFlywheelRpm(rpm);
+    }
+
+    private void stop() {
+        targetRpm = 0.0;
+        DcMotorEx turretMotor = robot.turret;
+        if (turretMotor != null) {
+            turretMotor.setVelocity(0);
+            turretMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+    }
+
+    private void setFlywheelRpm(double rpm) {
+        targetRpm = rpm;
+        DcMotorEx turretMotor = robot.turret;
+        if (turretMotor == null) {
+            telemetry.addLine("ERROR: turret motor is NULL!");
+            return;
+        }
+
+        double ticksPerSecond = rpmToTicksPerSecond(rpm);
+        turretMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        turretMotor.setVelocity(ticksPerSecond);
+    }
+
+    private double rpmToTicksPerSecond(double rpm) {
+        return (rpm * TICKS_PER_REV) / 60.0;
+    }
+}

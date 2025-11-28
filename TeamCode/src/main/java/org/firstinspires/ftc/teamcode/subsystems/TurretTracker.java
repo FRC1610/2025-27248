@@ -19,20 +19,10 @@ public class TurretTracker {
     private double integral = 0;
     private final ElapsedTime timer = new ElapsedTime();
 
-    public TurretTracker(RobotHardware robot, Telemetry telemetry,
-                         boolean allianceColorRed, boolean allianceColorBlue) {
+    public TurretTracker(RobotHardware robot, Telemetry telemetry) {
 
         this.robot = robot;
         this.telemetry = telemetry;
-
-        // -----------------------------
-        // Select pipeline by alliance
-        // -----------------------------
-        if (allianceColorBlue) {
-            robot.limelight.pipelineSwitch(0);   // Blue → Tag 20
-        } else if (allianceColorRed) {
-            robot.limelight.pipelineSwitch(4);   // Red → Tag 24
-        }
     }
 
     public void update() {
