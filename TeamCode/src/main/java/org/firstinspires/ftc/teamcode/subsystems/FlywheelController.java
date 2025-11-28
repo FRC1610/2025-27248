@@ -17,8 +17,8 @@ import java.util.List;
 /**
  * Flywheel controller that maps Limelight AprilTag distance to RPM setpoints.
  * The Limelight pipeline is selected in {@link RobotHardware#selectAllianceLimelightPipeline()}
- * so the correct tag is isolated for the current alliance. The turret motor in
- * {@link RobotHardware#turret} is used to spin the flywheel.
+ * so the correct tag is isolated for the current alliance. The launcher motor in
+ * {@link RobotHardware#launcher} is used to spin the flywheel.
  */
 public class FlywheelController {
 
@@ -38,8 +38,8 @@ public class FlywheelController {
         this.telemetry = telemetry;
     }
 
-    /**
-     * Toggle the flywheel on/off using the turret motor.
+     /**
+     * Toggle the flywheel on/off using the launcher motor.
      */
     public void toggle() {
         flywheelEnabled = !flywheelEnabled;
@@ -60,13 +60,13 @@ public class FlywheelController {
     }
 
     public double getCurrentRpm() {
-        DcMotorEx turretMotor = robot.turret;
-        if (turretMotor == null) {
-            telemetry.addLine("ERROR: turret motor is NULL!");
+        DcMotorEx launcherMotor = robot.launcher;
+        if (launcherMotor == null) {
+            telemetry.addLine("ERROR: launcher motor is NULL!");
             return 0.0;
         }
 
-        return (turretMotor.getVelocity() * 60.0) / TICKS_PER_REV;
+        return (launcherMotor.getVelocity() * 60.0) / TICKS_PER_REV;
     }
 
     public boolean isAtSpeed(double tolerance) {
@@ -81,8 +81,8 @@ public class FlywheelController {
             return;
         }
 
-        if (robot.turret == null) {
-            telemetry.addLine("ERROR: turret motor is NULL!");
+        if (robot.launcher == null) {
+            telemetry.addLine("ERROR: launcher motor is NULL!");
             return;
         }
 
@@ -119,24 +119,24 @@ public class FlywheelController {
 
     private void stop() {
         targetRpm = 0.0;
-        DcMotorEx turretMotor = robot.turret;
-        if (turretMotor != null) {
-            turretMotor.setVelocity(0);
-            turretMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        DcMotorEx launcherMotor = robot.launcher;
+        if (launcherMotor != null) {
+            launcherMotor.setVelocity(0);
+            launcherMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
     }
 
     private void setFlywheelRpm(double rpm) {
         targetRpm = rpm;
-        DcMotorEx turretMotor = robot.turret;
-        if (turretMotor == null) {
-            telemetry.addLine("ERROR: turret motor is NULL!");
+        DcMotorEx launcherMotor = robot.launcher;
+        if (launcherMotor == null) {
+            telemetry.addLine("ERROR: launcher motor is NULL!");
             return;
         }
 
         double ticksPerSecond = rpmToTicksPerSecond(rpm);
-        turretMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        turretMotor.setVelocity(ticksPerSecond);
+        launcherMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        launcherMotor.setVelocity(ticksPerSecond);
     }
 
     private double rpmToTicksPerSecond(double rpm) {
