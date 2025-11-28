@@ -162,7 +162,7 @@ public class RobotHardware {
         //Limelight Setup
         limelight = myOpMode.hardwareMap.get(Limelight3A.class, "limelight");
         //odo.setMsTransmissionInterval(11);
-        limelight.pipelineSwitch(0);
+        selectAllianceLimelightPipeline();
         limelight.start();
 
         //Color Sensor Setup
@@ -176,6 +176,19 @@ public class RobotHardware {
         myOpMode.telemetry.addData("Device Version Number:", pinpoint.getDeviceVersion());
         myOpMode.telemetry.addData("Device Scalar", pinpoint.getYawScalar());
         myOpMode.telemetry.update();
+    }
+
+    public void selectAllianceLimelightPipeline() {
+        if (limelight == null) {
+            myOpMode.telemetry.addLine("ERROR: Limelight not initialized");
+            return;
+        }
+
+        if (allianceColorBlue) {
+            limelight.pipelineSwitch(0);   // Blue → Tag 20
+        } else if (allianceColorRed) {
+            limelight.pipelineSwitch(4);   // Red → Tag 24
+        }
     }
 
     /**

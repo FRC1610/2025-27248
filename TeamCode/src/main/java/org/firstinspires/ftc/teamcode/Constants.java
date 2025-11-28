@@ -10,6 +10,9 @@ public class Constants {
     /// LAUNCHER SETPOINTS
     public static final int launcherClose = 1500;
     public static final int launcherFar = 2000;
+    public static final double DEFAULT_RPM = 1500.0;
+    public static final double LAUNCH_ZONE_MID_RPM = 2000.0; // ~3.5 ft
+    public static final double LAUNCH_ZONE_FAR_RPM = 2200.0; // ~5.5 ft
 
     ///  SPINDEXER SETPOINTS
     public static final double spindexerStart = 0.5;

@@ -11,6 +11,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import org.firstinspires.ftc.teamcode.StateMachine.State;
+import org.firstinspires.ftc.teamcode.subsystems.FlywheelController;
 import org.firstinspires.ftc.teamcode.subsystems.TurretTracker;
 //import org.firstinspires.ftc.teamcode.drivers.GoBildaPinpointDriver;
 
@@ -24,6 +25,7 @@ public class Competition extends LinearOpMode {
 
     RobotHardware robot = new RobotHardware(this);
     private TurretTracker turretTracker;
+    private FlywheelController flywheelController;
 
     StateMachine StateMachine;
 
@@ -31,8 +33,6 @@ public class Competition extends LinearOpMode {
     public void runOpMode() {
 
         StateMachine = new StateMachine(robot);
-
-        turretTracker = new TurretTracker(robot, telemetry, robot.allianceColorRed, robot.allianceColorBlue);
 
         ///Variable Setup
         //Odometry
@@ -51,9 +51,13 @@ public class Competition extends LinearOpMode {
         boolean dpadRightPressed = false;
         boolean prevDpadLeft2 = false;
         boolean prevDpadRight2 = false;
+        boolean prevBack2 = false;
 
 
         robot.init();  //Hardware configuration in RobotHardware.java
+
+        turretTracker = new TurretTracker(robot, telemetry);
+        flywheelController = new FlywheelController(robot, telemetry);
 
         waitForStart();
         resetRuntime();
@@ -117,6 +121,14 @@ public class Competition extends LinearOpMode {
                 robot.turret.setPower(0);
                 robot.headlight.setPosition(0.0);
             }
+
+            // Flywheel toggle on gamepad2 back
+            boolean back2 = gamepad2.back;
+            if (back2 && !prevBack2) {
+                flywheelController.toggle();
+            }
+            prevBack2 = back2;
+            flywheelController.update();
 
             ///INTAKE
             //IntakeDirection
@@ -198,27 +210,29 @@ public class Competition extends LinearOpMode {
                 bPressed = false;
             }
 
-            // --- Decrease RPM ---
-            if (gamepad1.x && !xPressed) {
-                robot.adjustRPM(-100);
-                xPressed = true;
-            } else if (!gamepad1.x) {
-                xPressed = false;
-            }
+//            // --- Decrease RPM ---
+//            if (gamepad1.x && !xPressed) {
+//                robot.adjustRPM(-100);
+//                xPressed = true;
+//            } else if (!gamepad1.x) {
+//                xPressed = false;
+//            }
 
-            // --- Increase RPM ---
-            if (gamepad1.y && !yPressed) {
-                robot.adjustRPM(100);
-                yPressed = true;
-            } else if (!gamepad1.y) {
-                yPressed = false;
-            }
+//            // --- Increase RPM ---
+//            if (gamepad1.y && !yPressed) {
+//                robot.adjustRPM(100);
+//                yPressed = true;
+//            } else if (!gamepad1.y) {
+//                yPressed = false;
+//            }
 
             StateMachine.update(); //Update state machine in case of long running tasks
             telemetry.addData("State", StateMachine.getState());
             telemetry.addData("Target RPM", robot.getTargetRPM());
             telemetry.addData("Current RPM", "%.1f", robot.getCurrentRPM());
-            telemetry.addData("Flywheel On", robot.isFlywheelOn());
+//            telemetry.addData("Flywheel On", robot.isFlywheelOn());
+            telemetry.addData("Turret Flywheel Enabled", flywheelController.isEnabled());
+            telemetry.addData("Turret Flywheel Target", "%.0f", flywheelController.getTargetRpm());
             telemetry.addData("Turret Target Pos", robot.getTurretTarget());
             telemetry.addData("Turret Current Pos", robot.getTurretPosition());
             telemetry.addData("Color1 R: ", robot.color1.red());
