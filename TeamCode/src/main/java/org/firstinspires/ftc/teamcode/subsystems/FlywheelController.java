@@ -31,6 +31,7 @@ public class FlywheelController {
     private final Telemetry telemetry;
     private boolean flywheelEnabled = false;
     private double targetRpm = 0.0;
+    private double lastVisionTargetRpm = Constants.DEFAULT_RPM;
 
     public FlywheelController(RobotHardware robot,
                               Telemetry telemetry) {
@@ -46,6 +47,7 @@ public class FlywheelController {
 
         if (flywheelEnabled) {
             setFlywheelRpm(Constants.DEFAULT_RPM);
+            lastVisionTargetRpm = Constants.DEFAULT_RPM;
         } else {
             stop();
         }
@@ -86,7 +88,7 @@ public class FlywheelController {
             return;
         }
 
-        double rpm = Constants.DEFAULT_RPM;
+        double rpm = lastVisionTargetRpm;
 
         LLResult result = robot.getLatestLimelightResult();
         if (result != null && result.isValid()) {
@@ -107,6 +109,7 @@ public class FlywheelController {
                     double distanceRatio = (clampedDistance - MID_ZONE_DISTANCE_FT) / (FAR_ZONE_DISTANCE_FT - MID_ZONE_DISTANCE_FT);
                     rpm = Constants.LAUNCH_ZONE_MID_RPM
                             + distanceRatio * (Constants.LAUNCH_ZONE_FAR_RPM - Constants.LAUNCH_ZONE_MID_RPM);
+                    lastVisionTargetRpm = rpm;
 
                     telemetry.addData("Flywheel Distance (ft)", "%.2f", distanceFeet);
                     telemetry.addData("Flywheel Target RPM", rpm);
@@ -114,6 +117,7 @@ public class FlywheelController {
             }
         }
 
+        rpm = Math.max(rpm, Constants.DEFAULT_RPM);
         setFlywheelRpm(rpm);
     }
 

@@ -67,10 +67,10 @@ public class Competition extends LinearOpMode {
         boolean yPressed = false;
         boolean dpadLeftPressed = false;
         boolean dpadRightPressed = false;
-        boolean prevDpadLeft2 = false;
-        boolean prevDpadRight2 = false;
-        boolean prevBack2 = false;
-        boolean prevRightBumper2 = false;
+        boolean dpadLeft2PreviouslyPressed = false;
+        boolean dpadRight2PreviouslyPressed = false;
+        boolean backButtonPreviouslyPressed = false;
+        boolean rightBumperPreviouslyPressed = false;
 
 
         robot.init();  //Hardware configuration in RobotHardware.java
@@ -148,19 +148,19 @@ public class Competition extends LinearOpMode {
             }
 
             // Flywheel toggle on gamepad2 back
-            boolean back2 = gamepad2.back;
-            if (back2 && !prevBack2) {
+            boolean backButtonPressed = gamepad2.back;
+            if (backButtonPressed && !backButtonPreviouslyPressed) {
                 flywheelController.toggle();
             }
-            prevBack2 = back2;
+            backButtonPreviouslyPressed = backButtonPressed;
             flywheelController.update();
 
-            boolean rightBumper2 = gamepad2.right_bumper;
-            if (rightBumper2 && !prevRightBumper2 && shootState == ShootState.IDLE
+            boolean rightBumperPressed = gamepad2.right_bumper;
+            if (rightBumperPressed && !rightBumperPreviouslyPressed && shootState == ShootState.IDLE
                     && flywheelController.isEnabled() && flywheelController.getTargetRpm() > 0) {
                 startShootSequence();
             }
-            prevRightBumper2 = rightBumper2;
+            rightBumperPreviouslyPressed = rightBumperPressed;
 
             updateShootSequence();
 
@@ -183,18 +183,18 @@ public class Competition extends LinearOpMode {
             boolean dpadRight2 = gamepad2.dpad_right;
 
             // Edge trigger LEFT (-0.05)
-            if (dpadLeft2 && !prevDpadLeft2) {
+            if (dpadLeft2 && !dpadLeft2PreviouslyPressed) {
                 robot.adjustSpindexer(-0.01);
             }
 
             // Edge trigger RIGHT (+0.05)
-            if (dpadRight2 && !prevDpadRight2) {
+            if (dpadRight2 && !dpadRight2PreviouslyPressed) {
                 robot.adjustSpindexer(0.01);
             }
 
             // update previous
-            prevDpadLeft2  = dpadLeft2;
-            prevDpadRight2 = dpadRight2;
+            dpadLeft2PreviouslyPressed  = dpadLeft2;
+            dpadRight2PreviouslyPressed = dpadRight2;
 
             if (shootState == ShootState.IDLE) {
                 //Manual Lift Control
@@ -339,26 +339,26 @@ public class Competition extends LinearOpMode {
                 }
                 break;
             case FIRE:
-                if (shootTimer.milliseconds() >= 200) {
+                if (shootTimer.milliseconds() >= 500) {
                     robot.kicker.setPosition(Constants.kickerDown);
                     shootTimer.reset();
                     shootState = ShootState.RETRACT;
                 }
                 break;
             case RETRACT:
-                if (shootTimer.milliseconds() >= 150) {
+                if (shootTimer.milliseconds() >= 250) {
                     advanceSpindexer();
                     shootTimer.reset();
                     shootState = ShootState.ADVANCE;
                 }
                 break;
             case ADVANCE:
-                if (shootTimer.milliseconds() >= 250) {
+                if (shootTimer.milliseconds() >= 500) {
                     shootState = ShootState.WAIT_FOR_SPINUP;
                 }
                 break;
             case PRIME_NEXT:
-                if (shootTimer.milliseconds() >= 200) {
+                if (shootTimer.milliseconds() >= 500) {
                     robot.kicker.setPosition(Constants.kickerDown);
                     shootState = ShootState.IDLE;
                 }
