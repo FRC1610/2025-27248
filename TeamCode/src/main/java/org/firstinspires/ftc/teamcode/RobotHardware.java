@@ -189,14 +189,15 @@ public class RobotHardware {
      * Read the alliance selector switch and set alliance colors with a blue default.
      */
     private void configureAllianceFromSwitch() {
-        // Default to blue if the switch is missing or reads low
+        // Default to blue. If the alliance switch is wired active-low (ground = red),
+        // interpret a low signal as red and a high or absent signal as blue.
         allianceColorBlue = true;
         allianceColorRed = false;
 
         if (allianceButton != null && allianceButton.getMode() == DigitalChannel.Mode.INPUT) {
-            boolean switchState = allianceButton.getState();
-            allianceColorRed = switchState;
-            allianceColorBlue = !switchState;
+            boolean rawSwitchState = allianceButton.getState();
+            allianceColorRed = !rawSwitchState;
+            allianceColorBlue = rawSwitchState;
         }
 
         rgbIndicatorMain.setColor(allianceColorRed ? LEDColors.RED : LEDColors.BLUE);
@@ -211,7 +212,9 @@ public class RobotHardware {
         // Default to blue if the switch is absent or read as low
         int pipeline = allianceColorRed ? 4 : 0;
         limelight.pipelineSwitch(pipeline);
-        myOpMode.telemetry.addData("Alliance switch state", allianceButton != null && allianceButton.getState());
+        boolean rawSwitchState = allianceButton != null && allianceButton.getState();
+        myOpMode.telemetry.addData("Alliance switch state (raw)", rawSwitchState);
+        myOpMode.telemetry.addData("Alliance inferred", allianceColorRed ? "RED" : "BLUE");
         myOpMode.telemetry.addData("Selected pipeline", pipeline);
     }
 
