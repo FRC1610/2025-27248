@@ -365,11 +365,14 @@ public class RobotHardware {
     }
 
     private double rpmToTicksPerSecond(double rpm) {
-        return (rpm * TICKS_PER_REV) / 60.0;
+        // Convert desired flywheel RPM to the motor-side encoder rate using the gear reduction.
+        double motorRpm = rpm * Constants.LAUNCHER_GEAR_REDUCTION;
+        return (motorRpm * TICKS_PER_REV) / 60.0;
     }
 
     public double getCurrentRPM() {
-        return (launcher.getVelocity() * 60.0) / TICKS_PER_REV;
+        // Convert motor-side encoder velocity back to flywheel RPM.
+        return (launcher.getVelocity() * 60.0) / (TICKS_PER_REV * Constants.LAUNCHER_GEAR_REDUCTION);
     }
 
 
