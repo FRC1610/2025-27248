@@ -232,11 +232,19 @@ public class RobotHardware {
             return;
         }
 
+        // Scale the motor-side PIDF gains by the gear reduction so the feedforward
+        // and proportional response still match the flywheel-side setpoints that are
+        // converted into motor ticks/second.
+        double gearScaledP = Constants.LAUNCHER_P * Constants.LAUNCHER_GEAR_REDUCTION;
+        double gearScaledI = Constants.LAUNCHER_I * Constants.LAUNCHER_GEAR_REDUCTION;
+        double gearScaledD = Constants.LAUNCHER_D * Constants.LAUNCHER_GEAR_REDUCTION;
+        double gearScaledF = Constants.LAUNCHER_F * Constants.LAUNCHER_GEAR_REDUCTION;
+
         PIDFCoefficients pidf = new PIDFCoefficients(
-                Constants.LAUNCHER_P,
-                Constants.LAUNCHER_I,
-                Constants.LAUNCHER_D,
-                Constants.LAUNCHER_F);
+                gearScaledP,
+                gearScaledI,
+                gearScaledD,
+                gearScaledF);
 
         launcher.setVelocityPIDFCoefficients(
                 pidf.p,
@@ -246,6 +254,10 @@ public class RobotHardware {
 
         myOpMode.telemetry.addData("Launcher PIDF (P,I,D,F)",
                 "%.2f, %.2f, %.2f, %.2f", pidf.p, pidf.i, pidf.d, pidf.f);
+        myOpMode.telemetry.addData("Launcher PIDF base (P,I,D,F)",
+                "%.2f, %.2f, %.2f, %.2f",
+                Constants.LAUNCHER_P, Constants.LAUNCHER_I,
+                Constants.LAUNCHER_D, Constants.LAUNCHER_F);
     }
 
     /**

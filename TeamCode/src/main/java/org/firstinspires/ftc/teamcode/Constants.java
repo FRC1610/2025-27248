@@ -16,11 +16,11 @@ public class Constants {
     public static final double FLYWHEEL_TOLERANCE_RPM = 50.0;
     public static final double LAUNCHER_GEAR_REDUCTION = 24.0 / 16.0; // motor:flywheel = 1.5:1
 
-    /// LAUNCHER PIDF (6000 RPM Yellow Jacket, 16:24 reduction)
+    /// LAUNCHER PIDF (base gains in motor units)
     // Free speed: 6000 rpm = 100 rps → 2,800 ticks/s (28 tpr encoder)
     // REV PIDF F = 32767 / maxTicksPerSecond
-    public static final double LAUNCHER_F = 11.7;    // 32767 / 2800, adjust after testing
-    public static final double LAUNCHER_P = 10.0;    // Start aggressive enough to fight droop
+    public static final double LAUNCHER_F = 11.7;    // Base F for motor-side ticks/s
+    public static final double LAUNCHER_P = 10.0;    // Base P sized for motor-side error
     public static final double LAUNCHER_I = 0.0;     // Keep zero to avoid windup during bursts
     public static final double LAUNCHER_D = 0.5;     // Light damping for overshoot/ringing
 
