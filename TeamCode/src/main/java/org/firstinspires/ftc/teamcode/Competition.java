@@ -117,8 +117,8 @@ public class Competition extends LinearOpMode {
             telemetry.addData("Heading Vel (rad/s)", headingVel);
 
             telemetry.addData("Status", robot.pinpoint.getDeviceStatus());
-            telemetry.addData("Pinpoint Frequency", robot.pinpoint.getFrequency()); //prints/gets the current refresh rate of the Pinpoint
-            telemetry.addData("REV Hub Frequency: ", frequency); //prints the control system refresh rate
+            //telemetry.addData("Pinpoint Frequency", robot.pinpoint.getFrequency()); //prints/gets the current refresh rate of the Pinpoint
+            //telemetry.addData("REV Hub Frequency: ", frequency); //prints the control system refresh rate
 
             ///MECANUM DRIVE
 
@@ -268,13 +268,13 @@ public class Competition extends LinearOpMode {
 //            }
 
             StateMachine.update(); //Update state machine in case of long running tasks
-            telemetry.addData("State", StateMachine.getState());
-            telemetry.addData("Target RPM", robot.getTargetRPM());
-            telemetry.addData("Current RPM", "%.1f", robot.getCurrentRPM());
-//            telemetry.addData("Flywheel On", robot.isFlywheelOn());
+            //telemetry.addData("State", StateMachine.getState());
+            //telemetry.addData("Target RPM", robot.getTargetRPM());
+            //telemetry.addData("Current RPM", "%.1f", robot.getCurrentRPM());
+            //telemetry.addData("Flywheel On", robot.isFlywheelOn());
             telemetry.addData("Turret Flywheel Enabled", flywheelController.isEnabled());
-            telemetry.addData("Turret Flywheel Target", "%.0f", flywheelController.getTargetRpm());
-            telemetry.addData("Turret Flywheel Current", "%.0f", flywheelController.getCurrentRpm());
+            telemetry.addData("Turret Target RPM", "%.0f", flywheelController.getTargetRpm());
+            telemetry.addData("Turret Current RPM", "%.0f", flywheelController.getCurrentRpm());
             telemetry.addData("Shoot State", shootState);
             telemetry.addData("Turret Target Pos", robot.getTurretTarget());
             telemetry.addData("Turret Current Pos", robot.getTurretPosition());
