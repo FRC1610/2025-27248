@@ -12,7 +12,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
-import org.firstinspires.ftc.teamcode.StateMachine.State;
 import org.firstinspires.ftc.teamcode.subsystems.FlywheelController;
 import org.firstinspires.ftc.teamcode.subsystems.TurretTracker;
 //import org.firstinspires.ftc.teamcode.drivers.GoBildaPinpointDriver;
@@ -45,12 +44,8 @@ public class Competition extends LinearOpMode {
     private final ElapsedTime shootTimer = new ElapsedTime();
     private boolean hasFiredShot = false;
 
-    StateMachine StateMachine;
-
     @Override
     public void runOpMode() {
-
-        StateMachine = new StateMachine(robot);
 
         ///Variable Setup
         //Odometry
@@ -267,8 +262,6 @@ public class Competition extends LinearOpMode {
 //                yPressed = false;
 //            }
 
-            StateMachine.update(); //Update state machine in case of long running tasks
-            //telemetry.addData("State", StateMachine.getState());
             //telemetry.addData("Target RPM", robot.getTargetRPM());
             //telemetry.addData("Current RPM", "%.1f", robot.getCurrentRPM());
             //telemetry.addData("Flywheel On", robot.isFlywheelOn());
