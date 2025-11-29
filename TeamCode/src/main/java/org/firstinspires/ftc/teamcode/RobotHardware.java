@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -122,6 +123,7 @@ public class RobotHardware {
         launcher.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launcher.setTargetPositionTolerance(25);
+        applyLauncherPidfTuning();
 
         //TURRET
         turret = myOpMode.hardwareMap.get(DcMotorEx.class, "turret");
@@ -217,6 +219,45 @@ public class RobotHardware {
         myOpMode.telemetry.addData("Alliance switch state (raw)", rawSwitchState);
         myOpMode.telemetry.addData("Alliance inferred", allianceColorRed ? "RED" : "BLUE");
         myOpMode.telemetry.addData("Selected pipeline", pipeline);
+    }
+
+    /**
+     * Apply starting PIDF gains for the 6000 RPM Yellow Jacket launcher.
+     * These values are derived from the motor's free speed and provide a
+     * responsive baseline to counter RPM droop when a note is launched.
+     */
+    private void applyLauncherPidfTuning() {
+        if (launcher == null) {
+            myOpMode.telemetry.addLine("ERROR: launcher motor is NULL!");
+            return;
+        }
+
+        // Scale the motor-side PIDF gains by the gear reduction so the feedforward
+        // and proportional response still match the flywheel-side setpoints that are
+        // converted into motor ticks/second.
+        double gearScaledP = Constants.LAUNCHER_P * Constants.LAUNCHER_GEAR_REDUCTION;
+        double gearScaledI = Constants.LAUNCHER_I * Constants.LAUNCHER_GEAR_REDUCTION;
+        double gearScaledD = Constants.LAUNCHER_D * Constants.LAUNCHER_GEAR_REDUCTION;
+        double gearScaledF = Constants.LAUNCHER_F * Constants.LAUNCHER_GEAR_REDUCTION;
+
+        PIDFCoefficients pidf = new PIDFCoefficients(
+                gearScaledP,
+                gearScaledI,
+                gearScaledD,
+                gearScaledF);
+
+        launcher.setVelocityPIDFCoefficients(
+                pidf.p,
+                pidf.i,
+                pidf.d,
+                pidf.f);
+
+        myOpMode.telemetry.addData("Launcher PIDF (P,I,D,F)",
+                "%.2f, %.2f, %.2f, %.2f", pidf.p, pidf.i, pidf.d, pidf.f);
+        myOpMode.telemetry.addData("Launcher PIDF base (P,I,D,F)",
+                "%.2f, %.2f, %.2f, %.2f",
+                Constants.LAUNCHER_P, Constants.LAUNCHER_I,
+                Constants.LAUNCHER_D, Constants.LAUNCHER_F);
     }
 
     /**
@@ -336,11 +377,14 @@ public class RobotHardware {
     }
 
     private double rpmToTicksPerSecond(double rpm) {
-        return (rpm * TICKS_PER_REV) / 60.0;
+        // Convert desired flywheel RPM to the motor-side encoder rate using the gear reduction.
+        double motorRpm = rpm * Constants.LAUNCHER_GEAR_REDUCTION;
+        return (motorRpm * TICKS_PER_REV) / 60.0;
     }
 
     public double getCurrentRPM() {
-        return (launcher.getVelocity() * 60.0) / TICKS_PER_REV;
+        // Convert motor-side encoder velocity back to flywheel RPM.
+        return (launcher.getVelocity() * 60.0) / (TICKS_PER_REV * Constants.LAUNCHER_GEAR_REDUCTION);
     }
 
 
