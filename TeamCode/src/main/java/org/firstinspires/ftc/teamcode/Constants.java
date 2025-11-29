@@ -15,6 +15,14 @@ public class Constants {
     public static final double LAUNCH_ZONE_FAR_RPM = 2200.0; // ~5.5 ft
     public static final double FLYWHEEL_TOLERANCE_RPM = 50.0;
 
+    /// LAUNCHER PIDF (6000 RPM Yellow Jacket, 16:24 reduction)
+    // Free speed: 6000 rpm = 100 rps → 2,800 ticks/s (28 tpr encoder)
+    // REV PIDF F = 32767 / maxTicksPerSecond
+    public static final double LAUNCHER_F = 11.7;    // 32767 / 2800, adjust after testing
+    public static final double LAUNCHER_P = 10.0;    // Start aggressive enough to fight droop
+    public static final double LAUNCHER_I = 0.0;     // Keep zero to avoid windup during bursts
+    public static final double LAUNCHER_D = 0.5;     // Light damping for overshoot/ringing
+
     ///  SPINDEXER SETPOINTS
     public static final double spindexerStart = 0.5;
     public static final double spindexer1 = 0.04;

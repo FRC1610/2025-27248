@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -122,6 +123,7 @@ public class RobotHardware {
         launcher.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launcher.setTargetPositionTolerance(25);
+        applyLauncherPidfTuning();
 
         //TURRET
         turret = myOpMode.hardwareMap.get(DcMotorEx.class, "turret");
@@ -217,6 +219,33 @@ public class RobotHardware {
         myOpMode.telemetry.addData("Alliance switch state (raw)", rawSwitchState);
         myOpMode.telemetry.addData("Alliance inferred", allianceColorRed ? "RED" : "BLUE");
         myOpMode.telemetry.addData("Selected pipeline", pipeline);
+    }
+
+    /**
+     * Apply starting PIDF gains for the 6000 RPM Yellow Jacket launcher.
+     * These values are derived from the motor's free speed and provide a
+     * responsive baseline to counter RPM droop when a note is launched.
+     */
+    private void applyLauncherPidfTuning() {
+        if (launcher == null) {
+            myOpMode.telemetry.addLine("ERROR: launcher motor is NULL!");
+            return;
+        }
+
+        PIDFCoefficients pidf = new PIDFCoefficients(
+                Constants.LAUNCHER_P,
+                Constants.LAUNCHER_I,
+                Constants.LAUNCHER_D,
+                Constants.LAUNCHER_F);
+
+        launcher.setVelocityPIDFCoefficients(
+                pidf.p,
+                pidf.i,
+                pidf.d,
+                pidf.f);
+
+        myOpMode.telemetry.addData("Launcher PIDF (P,I,D,F)",
+                "%.2f, %.2f, %.2f, %.2f", pidf.p, pidf.i, pidf.d, pidf.f);
     }
 
     /**
