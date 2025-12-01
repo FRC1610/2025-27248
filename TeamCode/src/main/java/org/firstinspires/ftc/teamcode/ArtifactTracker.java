@@ -55,13 +55,18 @@ public class ArtifactTracker {
     }
 
     private SlotStatus evaluateSensor(ColorSensor colorSensor, DistanceSensor distanceSensor, rgbIndicator indicator, int slot) {
-        if (colorSensor == null || distanceSensor == null || indicator == null) {
+        if (colorSensor == null || distanceSensor == null) {
+            if (indicator != null) {
+                indicator.setColor(LEDColors.OFF);
+            }
             return SlotStatus.VACANT;
         }
 
         double distance = distanceSensor.getDistance(DistanceUnit.MM);
         if (Double.isNaN(distance) || distance > Constants.COLOR_SENSOR_DETECTION_DISTANCE_MM) {
-            indicator.setColor(LEDColors.OFF);
+            if (indicator != null) {
+                indicator.setColor(LEDColors.OFF);
+            }
             return SlotStatus.VACANT;
         }
 
@@ -72,13 +77,23 @@ public class ArtifactTracker {
         SlotStatus status;
         if (blue >= Constants.COLOR_SENSOR_PURPLE_RATIO * green && blue >= Constants.COLOR_SENSOR_PURPLE_RATIO * red) {
             status = SlotStatus.PURPLE;
-            indicator.setColor(LEDColors.VIOLET);
         } else if (green >= Constants.COLOR_SENSOR_GREEN_RATIO * blue) {
             status = SlotStatus.GREEN;
-            indicator.setColor(LEDColors.GREEN);
         } else {
             status = SlotStatus.VACANT;
-            indicator.setColor(LEDColors.OFF);
+        }
+
+        if (indicator != null) {
+            switch (status) {
+                case PURPLE:
+                    indicator.setColor(LEDColors.VIOLET);
+                    break;
+                case GREEN:
+                    indicator.setColor(LEDColors.GREEN);
+                    break;
+                default:
+                    indicator.setColor(LEDColors.OFF);
+            }
         }
 
         telemetry.addData(String.format("Slot %d RGB", slot + 1), "R: %.0f, G: %.0f, B: %.0f, D: %.1fmm", red, green, blue, distance);
