@@ -42,6 +42,8 @@ public class Constants {
     public static final int turretHome = 0;
     public static final int turret_MIN = -750;  //counter-clockwise from above starting facing opposite intake
     public static final int turret_MAX = 500;  //clockwise from above starting facing opposite intake
+    public static final int turret_OBELISK_LEFT_LIMIT = -600;
+    public static final int turret_OBELISK_RIGHT_LIMIT = 600;
 
     ///  KICKER POSITIONS
     public static final double kickerDown = 0.0;
@@ -51,6 +53,9 @@ public class Constants {
     public static final int intakeColorRed = 4000;
     public static final int intakeColorGreen = 4000;
     public static final int intakeColorBlue = 4000;
+    public static final double COLOR_SENSOR_PURPLE_RATIO = 1.25; // Blue must exceed red and green by this factor
+    public static final double COLOR_SENSOR_GREEN_RATIO = 1.10;   // Green must exceed blue by this factor
+    public static final double COLOR_SENSOR_DETECTION_DISTANCE_MM = 40.0;
 
     ///AUTONOMOUS SETPOINTS
 

@@ -1,11 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -13,10 +10,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import org.firstinspires.ftc.teamcode.subsystems.FlywheelController;
+import org.firstinspires.ftc.teamcode.subsystems.ShootingController;
 import org.firstinspires.ftc.teamcode.subsystems.TurretTracker;
 //import org.firstinspires.ftc.teamcode.drivers.GoBildaPinpointDriver;
 
-import java.util.List;
 import java.util.Locale;
 
 //@Disabled
@@ -28,21 +25,11 @@ public class Competition extends LinearOpMode {
     RobotHardware robot = new RobotHardware(this);
     private TurretTracker turretTracker;
     private FlywheelController flywheelController;
+    private ShootingController shootingController;
+    private ArtifactTracker artifactTracker;
 
-    private enum ShootState {
-        IDLE,
-        FIRE,
-        RETRACT,
-        ADVANCE,
-        WAIT_FOR_SPINUP,
-        PRIME_NEXT
-    }
-
-    private ShootState shootState = ShootState.IDLE;
     private final double[] spindexerPositions = new double[]{Constants.spindexer1, Constants.spindexer2, Constants.spindexer3};
     private int spindexerIndex = 0;
-    private final ElapsedTime shootTimer = new ElapsedTime();
-    private boolean hasFiredShot = false;
 
     @Override
     public void runOpMode() {
@@ -75,6 +62,8 @@ public class Competition extends LinearOpMode {
 
         turretTracker = new TurretTracker(robot, telemetry);
         flywheelController = new FlywheelController(robot, telemetry);
+        shootingController = new ShootingController(robot, flywheelController, telemetry);
+        artifactTracker = new ArtifactTracker(robot, telemetry);
 
         waitForStart();
         resetRuntime();
@@ -82,6 +71,7 @@ public class Competition extends LinearOpMode {
         while (opModeIsActive()) {
 
             robot.refreshLimelightResult();
+            artifactTracker.update();
 
             //Limelight Data
             LLResult result = robot.getLatestLimelightResult();
@@ -151,13 +141,13 @@ public class Competition extends LinearOpMode {
             flywheelController.update();
 
             boolean rightBumperPressed = gamepad2.right_bumper;
-            if (rightBumperPressed && !rightBumperPreviouslyPressed && shootState == ShootState.IDLE
+            if (rightBumperPressed && !rightBumperPreviouslyPressed && shootingController.isIdle()
                     && flywheelController.isEnabled() && flywheelController.getTargetRpm() > 0) {
-                startShootSequence();
+                shootingController.startShootSequence();
             }
             rightBumperPreviouslyPressed = rightBumperPressed;
 
-            updateShootSequence();
+            shootingController.update();
 
             ///INTAKE
             //IntakeDirection
@@ -191,7 +181,7 @@ public class Competition extends LinearOpMode {
             dpadLeft2PreviouslyPressed  = dpadLeft2;
             dpadRight2PreviouslyPressed = dpadRight2;
 
-            if (shootState == ShootState.IDLE) {
+            if (shootingController.isIdle()) {
                 //Manual Lift Control
                 if (gamepad2.a) {
                     robot.kicker.setPosition(Constants.kickerUp);
@@ -268,7 +258,7 @@ public class Competition extends LinearOpMode {
             telemetry.addData("Turret Flywheel Enabled", flywheelController.isEnabled());
             telemetry.addData("Turret Target RPM", "%.0f", flywheelController.getTargetRpm());
             telemetry.addData("Turret Current RPM", "%.0f", flywheelController.getCurrentRpm());
-            telemetry.addData("Shoot State", shootState);
+            telemetry.addData("Shoot State", shootingController.getShootState());
             telemetry.addData("Turret Target Pos", robot.getTurretTarget());
             telemetry.addData("Turret Current Pos", robot.getTurretPosition());
             telemetry.addData("Color1 R: ", robot.color1.red());
@@ -279,92 +269,4 @@ public class Competition extends LinearOpMode {
         }
     }
 
-    private boolean isAimedAtTarget() {
-        LLResult result = robot.getLatestLimelightResult();
-        if (result == null || !result.isValid()) {
-            return false;
-        }
-
-        double txPercent = result.getTx();
-        if (!Double.isNaN(txPercent)) {
-            return Math.abs(txPercent) <= 0.05;
-        }
-
-        List<LLResultTypes.FiducialResult> fiducials = result.getFiducialResults();
-        if (fiducials == null || fiducials.isEmpty()) {
-            return false;
-        }
-
-        double txDegrees = fiducials.get(0).getTargetXDegrees();
-        return Math.abs(txDegrees) <= 5.0;
-    }
-
-    private void startShootSequence() {
-        shootState = ShootState.WAIT_FOR_SPINUP;
-        shootTimer.reset();
-        hasFiredShot = false;
-        robot.kicker.setPosition(Constants.kickerDown);
-    }
-
-    private void updateShootSequence() {
-        if (shootState == ShootState.IDLE) {
-            return;
-        }
-
-        if (!flywheelController.isEnabled() || flywheelController.getTargetRpm() <= 0) {
-            robot.kicker.setPosition(Constants.kickerDown);
-            shootState = ShootState.IDLE;
-            hasFiredShot = false;
-            return;
-        }
-
-        switch (shootState) {
-            case WAIT_FOR_SPINUP:
-                if (flywheelController.isAtSpeed(Constants.FLYWHEEL_TOLERANCE_RPM) && isAimedAtTarget()) {
-                    robot.kicker.setPosition(Constants.kickerUp);
-                    shootTimer.reset();
-                    if (!hasFiredShot) {
-                        shootState = ShootState.FIRE;
-                        hasFiredShot = true;
-                    } else {
-                        shootState = ShootState.PRIME_NEXT;
-                    }
-                }
-                break;
-            case FIRE:
-                if (shootTimer.milliseconds() >= 500) {
-                    robot.kicker.setPosition(Constants.kickerDown);
-                    shootTimer.reset();
-                    shootState = ShootState.RETRACT;
-                }
-                break;
-            case RETRACT:
-                if (shootTimer.milliseconds() >= 250) {
-                    advanceSpindexer();
-                    shootTimer.reset();
-                    shootState = ShootState.ADVANCE;
-                }
-                break;
-            case ADVANCE:
-                if (shootTimer.milliseconds() >= 500) {
-                    shootState = ShootState.WAIT_FOR_SPINUP;
-                }
-                break;
-            case PRIME_NEXT:
-                if (shootTimer.milliseconds() >= 500) {
-                    robot.kicker.setPosition(Constants.kickerDown);
-                    shootState = ShootState.IDLE;
-                }
-                break;
-            default:
-                shootState = ShootState.IDLE;
-                break;
-        }
-    }
-
-    private void advanceSpindexer() {
-        spindexerIndex = (spindexerIndex + 1) % spindexerPositions.length;
-        robot.spindexerPos = spindexerPositions[spindexerIndex];
-        robot.spindexer.setPosition(robot.spindexerPos);
-    }
 }
