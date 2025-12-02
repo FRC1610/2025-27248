@@ -122,11 +122,15 @@ public class ReadObelisk {
         }
 
         int id = fiducials.get(0).getFiducialId();
-        return switch (id) {
-            case 21 -> new ObeliskPattern(ArtifactColor.GREEN, ArtifactColor.PURPLE, ArtifactColor.PURPLE);
-            case 22 -> new ObeliskPattern(ArtifactColor.PURPLE, ArtifactColor.GREEN, ArtifactColor.PURPLE);
-            case 23 -> new ObeliskPattern(ArtifactColor.PURPLE, ArtifactColor.PURPLE, ArtifactColor.GREEN);
-            default -> null;
-        };
+        switch (id) {
+            case 21:
+                return new ObeliskPattern(ArtifactColor.GREEN, ArtifactColor.PURPLE, ArtifactColor.PURPLE);
+            case 22:
+                return new ObeliskPattern(ArtifactColor.PURPLE, ArtifactColor.GREEN, ArtifactColor.PURPLE);
+            case 23:
+                return new ObeliskPattern(ArtifactColor.PURPLE, ArtifactColor.PURPLE, ArtifactColor.GREEN);
+            default:
+                return null;
+        }
     }
 }
