@@ -27,6 +27,7 @@ public class CypherMaxAbsoluteEncoder {
     private long lastFallingTimeNs;
     private double dutyCycle;
     private double lastPositionCounts;
+    private double zeroOffsetCounts;
     private boolean validReading;
 
     /**
@@ -90,10 +91,48 @@ public class CypherMaxAbsoluteEncoder {
     }
 
     /**
+     * @return absolute position in raw counts adjusted by any configured zero offset.
+     */
+    public double getZeroedPositionCounts() {
+        double adjusted = lastPositionCounts - zeroOffsetCounts;
+        if (adjusted < 0) {
+            adjusted += MAX_COUNTS + 1;
+        }
+        return Range.clip(adjusted, 0, MAX_COUNTS);
+    }
+
+    /**
      * @return absolute position in degrees (0-360)
      */
     public double getPositionDegrees() {
         return (lastPositionCounts / MAX_COUNTS) * 360.0;
+    }
+
+    /**
+     * @return absolute position in degrees (0-360) adjusted by any configured zero offset.
+     */
+    public double getZeroedPositionDegrees() {
+        return (getZeroedPositionCounts() / MAX_COUNTS) * 360.0;
+    }
+
+    /**
+     * Apply an offset that is subtracted from the raw absolute reading. Use this to
+     * align the factory-calibrated zero with your mechanical zero reference.
+     *
+     * @param offsetCounts value in counts (0-4095)
+     */
+    public void setZeroOffsetCounts(double offsetCounts) {
+        zeroOffsetCounts = Range.clip(offsetCounts, 0, MAX_COUNTS);
+    }
+
+    /**
+     * Apply an offset in degrees that is subtracted from the raw absolute reading.
+     *
+     * @param offsetDegrees value in degrees (0-360)
+     */
+    public void setZeroOffsetDegrees(double offsetDegrees) {
+        double offsetCounts = (offsetDegrees / 360.0) * MAX_COUNTS;
+        setZeroOffsetCounts(offsetCounts);
     }
 
     /**

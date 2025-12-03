@@ -45,6 +45,8 @@ public class CypherMaxAbsoluteOpMode extends LinearOpMode {
         telemetry.addData("Duty Cycle", "%.3f", encoder.getDutyCycle());
         telemetry.addData("Counts", "%.1f / 4095", encoder.getPositionCounts());
         telemetry.addData("Degrees", "%.2f", encoder.getPositionDegrees());
+        telemetry.addData("Zeroed Counts", "%.1f / 4095", encoder.getZeroedPositionCounts());
+        telemetry.addData("Zeroed Degrees", "%.2f", encoder.getZeroedPositionDegrees());
         telemetry.addData("Frame Valid", encoder.isValid());
         telemetry.update();
     }
