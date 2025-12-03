@@ -13,7 +13,13 @@ import com.qualcomm.robotcore.util.Range;
  */
 public class CypherMaxAbsoluteEncoder {
 
+    /**
+     * The encoder transmits 12 high start pulses followed by 0-4095 high data pulses
+     * inside a 4119-pulse frame. Use these values to convert duty cycle into counts.
+     */
     private static final double MAX_COUNTS = 4095.0;
+    private static final double START_PULSES = 12.0;
+    private static final double FRAME_PULSES = 4119.0;
 
     private final DigitalChannel pwmInput;
     private boolean lastState;
@@ -21,6 +27,7 @@ public class CypherMaxAbsoluteEncoder {
     private long lastFallingTimeNs;
     private double dutyCycle;
     private double lastPositionCounts;
+    private boolean validReading;
 
     /**
      * Create a new Cypher Max reader.
@@ -52,7 +59,10 @@ public class CypherMaxAbsoluteEncoder {
             if (periodNs > 0 && lastFallingTimeNs > lastRisingTimeNs) {
                 long highNs = lastFallingTimeNs - lastRisingTimeNs;
                 dutyCycle = (double) highNs / periodNs;
-                lastPositionCounts = Range.clip(dutyCycle * MAX_COUNTS, 0, MAX_COUNTS);
+                double encodedPulses = dutyCycle * FRAME_PULSES;
+                double decodedCounts = encodedPulses - START_PULSES;
+                validReading = encodedPulses >= START_PULSES && encodedPulses <= START_PULSES + MAX_COUNTS;
+                lastPositionCounts = Range.clip(decodedCounts, 0, MAX_COUNTS);
             }
             lastRisingTimeNs = now;
         }
@@ -84,5 +94,13 @@ public class CypherMaxAbsoluteEncoder {
      */
     public double getPositionDegrees() {
         return (lastPositionCounts / MAX_COUNTS) * 360.0;
+    }
+
+    /**
+     * @return true if the measured duty cycle fell within the expected frame window
+     *         (i.e., at least the 12 start pulses and no more than the total frame)
+     */
+    public boolean isValid() {
+        return validReading;
     }
 }
