@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.SharedState;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.BooleanSupplier;
 
 /**
  * Utility that uses the Limelight to read the "obelisk" AprilTag and derive the
@@ -77,6 +78,10 @@ public class ReadObelisk {
     }
 
     public ObeliskPattern scanForPattern() {
+        return scanForPattern(() -> false);
+    }
+
+    public ObeliskPattern scanForPattern(BooleanSupplier shouldCancel) {
         if (robot.limelight == null) {
             telemetry.addLine("ERROR: Limelight not initialized");
             telemetry.update();
@@ -102,7 +107,7 @@ public class ReadObelisk {
 
         driveTurretTo(targetTicks);
 
-        while (opMode.opModeIsActive() && robot.turret.isBusy()) {
+        while (opMode.opModeIsActive() && robot.turret.isBusy() && !shouldCancel.getAsBoolean()) {
             robot.refreshLimelightResult();
             detected = decodePattern(robot.getLatestLimelightResult());
             targetFound = detected != null;

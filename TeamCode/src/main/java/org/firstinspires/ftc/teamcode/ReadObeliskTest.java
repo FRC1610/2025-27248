@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.firstinspires.ftc.teamcode.subsystems.ReadObelisk;
 
 /**
@@ -27,17 +28,43 @@ public class ReadObeliskTest extends LinearOpMode {
             return;
         }
 
-        ReadObelisk.ObeliskPattern detectedPattern = obeliskReader.scanForPattern();
+        boolean backPressedLast = false;
+        AtomicBoolean scanEnabled = new AtomicBoolean(false);
+        boolean scanning = false;
+        ReadObelisk.ObeliskPattern detectedPattern = ReadObelisk.getCachedPattern();
 
-        boolean allianceColor = robot.refreshAllianceFromSwitchState();
-        telemetry.addData("Alliance Color", allianceColor ? "RED" : "BLUE");
-        telemetry.addData("Turret Sweep", "Complete");
-        telemetry.addData("Turret Position", robot.turret.getCurrentPosition());
-        telemetry.addData("Target Found", detectedPattern != null);
-        if (detectedPattern != null) {
-            telemetry.addData("Pattern", detectedPattern);
+        while (opModeIsActive()) {
+            boolean backPressed = gamepad2.back;
+            if (backPressed && !backPressedLast) {
+                scanEnabled.set(!scanEnabled.get());
+            }
+            backPressedLast = backPressed;
+
+            if (scanEnabled.get() && !scanning) {
+                scanning = true;
+                ReadObelisk.ObeliskPattern pattern = obeliskReader.scanForPattern(
+                        () -> !opModeIsActive() || !scanEnabled.get());
+                if (pattern != null) {
+                    detectedPattern = pattern;
+                }
+                scanning = false;
+                scanEnabled.set(false);
+            }
+
+            boolean allianceColor = robot.refreshAllianceFromSwitchState();
+            String sweepDirection = allianceColor ? "LEFT (negative)" : "RIGHT (positive)";
+
+            telemetry.addData("Alliance Color", allianceColor ? "RED" : "BLUE");
+            telemetry.addData("Turret Sweep", scanning ? sweepDirection : "Idle");
+            telemetry.addData("Turret Position", robot.turret.getCurrentPosition());
+            telemetry.addData("Target Found", detectedPattern != null);
+            if (detectedPattern != null) {
+                telemetry.addData("Pattern", detectedPattern);
+            }
+            telemetry.update();
+
+            idle();
         }
-        telemetry.update();
     }
 }
 
