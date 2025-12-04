@@ -38,6 +38,10 @@ public class RobotHardware {
     public boolean allianceColorBlue = false;
     public ColorSensor color1;
     public DistanceSensor distance1;
+    public ColorSensor color2;
+    public DistanceSensor distance2;
+    public ColorSensor color3;
+    public DistanceSensor distance3;
     //private AnalogInput turretPos;
 
     public enum IntakeDirection {
@@ -49,6 +53,9 @@ public class RobotHardware {
     public Limelight3A limelight;
     public GoBildaPinpointDriver pinpoint; // Declare OpMode member for the Odometry Computer
     public rgbIndicator rgbIndicatorMain;
+    public rgbIndicator rearRGB1;
+    public rgbIndicator rearRGB2;
+    public rgbIndicator rearRGB3;
     private DigitalChannel allianceButton;
     private double targetRPM = 0;
     private boolean flywheelOn = false;
@@ -74,6 +81,13 @@ public class RobotHardware {
 
         rgbIndicatorMain = new rgbIndicator(myOpMode.hardwareMap, "rgbLight");
         rgbIndicatorMain.setColor(LEDColors.YELLOW);
+
+        rearRGB1 = new rgbIndicator(myOpMode.hardwareMap, "rearRGB1");
+        rearRGB2 = new rgbIndicator(myOpMode.hardwareMap, "rearRGB2");
+        rearRGB3 = new rgbIndicator(myOpMode.hardwareMap, "rearRGB3");
+        rearRGB1.setColor(LEDColors.YELLOW);
+        rearRGB2.setColor(LEDColors.YELLOW);
+        rearRGB3.setColor(LEDColors.YELLOW);
 
         allianceButton = myOpMode.hardwareMap.get(DigitalChannel.class, "allianceButton");
         allianceButton.setMode(DigitalChannel.Mode.INPUT);
@@ -129,7 +143,6 @@ public class RobotHardware {
         turret = myOpMode.hardwareMap.get(DcMotorEx.class, "turret");
         turret.setDirection(DcMotorSimple.Direction.REVERSE);
         turret.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turret.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         turret.setTargetPositionTolerance(5);
 
@@ -160,6 +173,10 @@ public class RobotHardware {
         //Color Sensor Setup
         color1 = myOpMode.hardwareMap.get(RevColorSensorV3.class, "color1");
         distance1 = myOpMode.hardwareMap.get(DistanceSensor.class, "color1");
+        color2 = myOpMode.hardwareMap.get(RevColorSensorV3.class, "color2");
+        distance2 = myOpMode.hardwareMap.get(DistanceSensor.class, "color2");
+        color3 = myOpMode.hardwareMap.get(RevColorSensorV3.class, "color3");
+        distance3 = myOpMode.hardwareMap.get(DistanceSensor.class, "color3");
 
         //Telemetry Data
         myOpMode.telemetry.addData("Status", "Initialized");
@@ -191,7 +208,18 @@ public class RobotHardware {
     /**
      * Read the alliance selector switch and set alliance colors with a blue default.
      */
-    private void configureAllianceFromSwitch() {
+    public void configureAllianceFromSwitch() {
+        refreshAllianceFromSwitchState();
+        rgbIndicatorMain.setColor(allianceColorRed ? LEDColors.RED : LEDColors.BLUE);
+    }
+
+    /**
+     * Refresh the cached alliance color using the same logic as {@link #configureAllianceFromSwitch()}.
+     * This helper avoids updating indicators so utilities can fetch the alliance without extra side effects.
+     *
+     * @return true if the alliance switch indicates red; false otherwise.
+     */
+    public boolean refreshAllianceFromSwitchState() {
         // Default to blue. If the alliance switch is wired active-low (ground = red),
         // interpret a low signal as red and a high or absent signal as blue.
         allianceColorBlue = true;
@@ -203,7 +231,7 @@ public class RobotHardware {
             allianceColorBlue = rawSwitchState;
         }
 
-        rgbIndicatorMain.setColor(allianceColorRed ? LEDColors.RED : LEDColors.BLUE);
+        return allianceColorRed;
     }
 
     public void selectAllianceLimelightPipeline() {

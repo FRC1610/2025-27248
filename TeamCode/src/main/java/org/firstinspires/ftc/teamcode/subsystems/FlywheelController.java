@@ -4,7 +4,9 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.util.RobotLog;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
@@ -32,6 +34,10 @@ public class FlywheelController {
     private final Telemetry telemetry;
     private boolean flywheelEnabled = false;
     private double targetRpm = 0.0;
+
+    private final ElapsedTime spinupTimer = new ElapsedTime();
+    private boolean measuringSpinup = false;
+    private double spinupSetpointRpm = 0.0;
 
     public FlywheelController(RobotHardware robot,
                               Telemetry telemetry) {
@@ -123,10 +129,17 @@ public class FlywheelController {
 
         rpm = Math.max(rpm, Constants.DEFAULT_RPM);
         setFlywheelRpm(rpm);
+
+        if (measuringSpinup && isAtSpeed(Constants.FLYWHEEL_TOLERANCE_RPM)) {
+            double elapsedSeconds = spinupTimer.seconds();
+            RobotLog.ii("FlywheelController", "Spin-up to %.0f RPM reached in %.2f s", spinupSetpointRpm, elapsedSeconds);
+            measuringSpinup = false;
+        }
     }
 
     private void stop() {
         targetRpm = 0.0;
+        measuringSpinup = false;
         DcMotorEx launcherMotor = robot.launcher;
         if (launcherMotor != null) {
             launcherMotor.setVelocity(0);
@@ -135,6 +148,12 @@ public class FlywheelController {
     }
 
     private void setFlywheelRpm(double rpm) {
+        if (rpm > 0 && targetRpm <= 0) {
+            spinupSetpointRpm = rpm;
+            spinupTimer.reset();
+            measuringSpinup = true;
+        }
+
         targetRpm = rpm;
         DcMotorEx launcherMotor = robot.launcher;
         if (launcherMotor == null) {
