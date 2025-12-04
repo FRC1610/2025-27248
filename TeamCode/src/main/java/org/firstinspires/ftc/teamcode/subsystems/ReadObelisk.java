@@ -60,6 +60,22 @@ public class ReadObelisk {
         return cachedPattern;
     }
 
+    /**
+     * Attempt to decode the latest Limelight result and cache the detected pattern for
+     * reuse across OpModes.
+     *
+     * @return the detected {@link ObeliskPattern}, or {@code null} if no valid tag is visible
+     */
+    public ObeliskPattern decodeLatestAndCache() {
+        robot.refreshLimelightResult();
+        ObeliskPattern pattern = decodePattern(robot.getLatestLimelightResult());
+        if (pattern != null) {
+            cachedPattern = pattern;
+            SharedState.saveObeliskPattern(pattern);
+        }
+        return pattern;
+    }
+
     public ObeliskPattern scanForPattern() {
         if (robot.limelight == null) {
             telemetry.addLine("ERROR: Limelight not initialized");
