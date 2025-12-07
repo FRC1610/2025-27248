@@ -124,11 +124,17 @@ public class Competition extends LinearOpMode {
 
             // Run turret tracking when the flywheel is active or Start is held for manual testing
             boolean trackingActive = flywheelController.isEnabled() || gamepad2.start;
+            boolean tracking = false;
             if (trackingActive) {
-                turretTracker.update();
-                robot.headlight.setPosition(Constants.headlightPower); //Set light power here
+                tracking = turretTracker.update();
             } else {
                 robot.turret.setPower(0);
+            }
+
+            // Turn on the headlight only when turret tracking is actually active
+            if (tracking) {
+                robot.headlight.setPosition(Constants.headlightPower); //Set light power here
+            } else {
                 robot.headlight.setPosition(0.0);
             }
 

@@ -25,13 +25,18 @@ public class TurretTracker {
         this.telemetry = telemetry;
     }
 
-    public void update() {
+    /**
+     * Updates the turret tracking loop.
+     *
+     * @return true when the turret is actively tracking a valid AprilTag target, false otherwise.
+     */
+    public boolean update() {
 
         // SAFETY: limelight not initialized
         // SAFETY: turret not initialized
         if (robot.turret == null) {
             telemetry.addLine("ERROR: turret motor is NULL!");
-            return;
+            return false;
         }
 
         // Get latest frame
@@ -40,14 +45,14 @@ public class TurretTracker {
         // SAFETY: result missing or invalid
         if (result == null || !result.isValid()) {
             robot.turret.setPower(0);
-            return;
+            return false;
         }
 
         // Get fiducials (FTC API)
         List<LLResultTypes.FiducialResult> fiducials = result.getFiducialResults();
         if (fiducials == null || fiducials.isEmpty()) {
             robot.turret.setPower(0);
-            return;
+            return false;
         }
 
         // Since the pipeline already filters the tag ID,
@@ -89,5 +94,7 @@ public class TurretTracker {
         telemetry.addData("tx", tx);
         telemetry.addData("Power", power);
         telemetry.addData("TurretPos", pos);
+
+        return true;
     }
 }
