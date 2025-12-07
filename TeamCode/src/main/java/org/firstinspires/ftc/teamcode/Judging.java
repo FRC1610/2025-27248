@@ -4,9 +4,9 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Constants;
+import org.firstinspires.ftc.teamcode.subsystems.ArtifactTracker;
 import org.firstinspires.ftc.teamcode.subsystems.FlywheelController;
 import org.firstinspires.ftc.teamcode.subsystems.TurretTracker;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @TeleOp(name = "Judging", group = "Test")
 public class Judging extends LinearOpMode {
@@ -14,6 +14,7 @@ public class Judging extends LinearOpMode {
     private final RobotHardware robot = new RobotHardware(this);
     private TurretTracker turretTracker;
     private FlywheelController flywheelController;
+    private ArtifactTracker artifactTracker;
 
     @Override
     public void runOpMode() {
@@ -24,6 +25,7 @@ public class Judging extends LinearOpMode {
         robot.init();
         turretTracker = new TurretTracker(robot, telemetry);
         flywheelController = new FlywheelController(robot, telemetry);
+        artifactTracker = new ArtifactTracker(robot, telemetry);
 
         telemetry.addLine("Judging OpMode Initialized");
         telemetry.update();
@@ -32,6 +34,7 @@ public class Judging extends LinearOpMode {
 
         while (opModeIsActive()) {
             robot.refreshLimelightResult();
+            artifactTracker.update();
 
             // Toggle turret tracking on gamepad1 back button
             boolean backButtonPressed = gamepad1.back;
@@ -86,27 +89,6 @@ public class Judging extends LinearOpMode {
             telemetry.addData("Flywheel Enabled", flywheelController.isEnabled());
             telemetry.addData("Flywheel Target RPM", "%.0f", flywheelController.getTargetRpm());
             telemetry.addData("Flywheel Measured RPM", "%.0f", flywheelController.getCurrentRpm());
-            telemetry.addData(
-                    "Color1",
-                    "R:%d G:%d B:%d D:%.0fmm",
-                    robot.color1.red(),
-                    robot.color1.green(),
-                    robot.color1.blue(),
-                    robot.distance1.getDistance(DistanceUnit.MM));
-            telemetry.addData(
-                    "Color2",
-                    "R:%d G:%d B:%d D:%.0fmm",
-                    robot.color2.red(),
-                    robot.color2.green(),
-                    robot.color2.blue(),
-                    robot.distance2.getDistance(DistanceUnit.MM));
-            telemetry.addData(
-                    "Color3",
-                    "R:%d G:%d B:%d D:%.0fmm",
-                    robot.color3.red(),
-                    robot.color3.green(),
-                    robot.color3.blue(),
-                    robot.distance3.getDistance(DistanceUnit.MM));
             telemetry.update();
         }
     }
