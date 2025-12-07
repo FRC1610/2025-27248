@@ -83,7 +83,8 @@ public class ArtifactTracker {
         SlotStatus status;
         if (blue >= Constants.COLOR_SENSOR_PURPLE_RATIO * green && blue >= Constants.COLOR_SENSOR_PURPLE_RATIO * red) {
             status = SlotStatus.PURPLE;
-        } else if (green >= Constants.COLOR_SENSOR_GREEN_RATIO * blue) {
+        } else if (green >= Constants.COLOR_SENSOR_GREEN_BLUE_RATIO * blue
+                && green >= Constants.COLOR_SENSOR_GREEN_RED_RATIO * red) {
             status = SlotStatus.GREEN;
         } else {
             status = SlotStatus.VACANT;

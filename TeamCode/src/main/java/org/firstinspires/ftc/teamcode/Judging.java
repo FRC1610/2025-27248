@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.FlywheelController;
 import org.firstinspires.ftc.teamcode.subsystems.TurretTracker;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @TeleOp(name = "Judging", group = "Test")
 public class Judging extends LinearOpMode {
@@ -85,9 +86,27 @@ public class Judging extends LinearOpMode {
             telemetry.addData("Flywheel Enabled", flywheelController.isEnabled());
             telemetry.addData("Flywheel Target RPM", "%.0f", flywheelController.getTargetRpm());
             telemetry.addData("Flywheel Measured RPM", "%.0f", flywheelController.getCurrentRpm());
-            telemetry.addData("Color1 RGB", "R: %d  G: %d  B: %d", robot.color1.red(), robot.color1.green(), robot.color1.blue());
-            telemetry.addData("Color2 RGB", "R: %d  G: %d  B: %d", robot.color2.red(), robot.color2.green(), robot.color2.blue());
-            telemetry.addData("Color3 RGB", "R: %d  G: %d  B: %d", robot.color3.red(), robot.color3.green(), robot.color3.blue());
+            telemetry.addData(
+                    "Color1",
+                    "R:%d G:%d B:%d D:%.0fmm",
+                    robot.color1.red(),
+                    robot.color1.green(),
+                    robot.color1.blue(),
+                    robot.distance1.getDistance(DistanceUnit.MM));
+            telemetry.addData(
+                    "Color2",
+                    "R:%d G:%d B:%d D:%.0fmm",
+                    robot.color2.red(),
+                    robot.color2.green(),
+                    robot.color2.blue(),
+                    robot.distance2.getDistance(DistanceUnit.MM));
+            telemetry.addData(
+                    "Color3",
+                    "R:%d G:%d B:%d D:%.0fmm",
+                    robot.color3.red(),
+                    robot.color3.green(),
+                    robot.color3.blue(),
+                    robot.distance3.getDistance(DistanceUnit.MM));
             telemetry.update();
         }
     }
