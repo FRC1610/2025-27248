@@ -46,8 +46,7 @@ public class Competition extends LinearOpMode {
 
         boolean aPressed = false;
         boolean bPressed = false;
-        boolean xPressed = false;
-        boolean yPressed = false;
+
         boolean dpadLeftPressed = false;
         boolean dpadRightPressed = false;
         boolean dpadLeft2PreviouslyPressed = false;
@@ -127,7 +126,7 @@ public class Competition extends LinearOpMode {
             boolean trackingActive = flywheelController.isEnabled() || gamepad2.start;
             if (trackingActive) {
                 turretTracker.update();
-                robot.headlight.setPosition(0.25); //Set light power here
+                robot.headlight.setPosition(Constants.headlightPower); //Set light power here
             } else {
                 robot.turret.setPower(0);
                 robot.headlight.setPosition(0.0);
@@ -203,24 +202,6 @@ public class Competition extends LinearOpMode {
                 }
             }
 
-
-            // ---------------- Turret Control ----------------
-            // D-Pad Left = decrease by 10 ticks
-            if (gamepad1.dpad_left && !dpadLeftPressed) {
-                robot.adjustTurret(-25);
-                dpadLeftPressed = true;
-            } else if (!gamepad1.dpad_left) {
-                dpadLeftPressed = false;
-            }
-
-            // D-Pad Right = increase by 10 ticks
-            if (gamepad1.dpad_right && !dpadRightPressed) {
-                robot.adjustTurret(+25);
-                dpadRightPressed = true;
-            } else if (!gamepad1.dpad_right) {
-                dpadRightPressed = false;
-            }
-
             // --- Toggle Close Shot ---
             if (gamepad1.a && !aPressed) {
                 robot.toggleFlywheel(Constants.launcherClose);
@@ -237,25 +218,6 @@ public class Competition extends LinearOpMode {
                 bPressed = false;
             }
 
-//            // --- Decrease RPM ---
-//            if (gamepad1.x && !xPressed) {
-//                robot.adjustRPM(-100);
-//                xPressed = true;
-//            } else if (!gamepad1.x) {
-//                xPressed = false;
-//            }
-
-//            // --- Increase RPM ---
-//            if (gamepad1.y && !yPressed) {
-//                robot.adjustRPM(100);
-//                yPressed = true;
-//            } else if (!gamepad1.y) {
-//                yPressed = false;
-//            }
-
-            //telemetry.addData("Target RPM", robot.getTargetRPM());
-            //telemetry.addData("Current RPM", "%.1f", robot.getCurrentRPM());
-            //telemetry.addData("Flywheel On", robot.isFlywheelOn());
             telemetry.addData("Turret Flywheel Enabled", flywheelController.isEnabled());
             telemetry.addData("Turret Target RPM", "%.0f", flywheelController.getTargetRpm());
             telemetry.addData("Turret Current RPM", "%.0f", flywheelController.getCurrentRpm());
