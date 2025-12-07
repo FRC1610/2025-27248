@@ -45,12 +45,14 @@ public class IntakeController {
 
         syncSpindexerIndex();
         if (spindexerIndex == 0) {
-            if (slotsFilled(slots, 0, 1)) {
+            boolean hiddenSlotVacant = slots[2] == ArtifactTracker.SlotStatus.VACANT;
+            if (hiddenSlotVacant && slotsFilled(slots, 0, 1)) {
                 moveToPosition(1);
                 telemetry.addLine("Slots 1 & 2 full; rotating to position 2");
             }
         } else {
-            if (slotsFilled(slots, 1, 2)) {
+            boolean hiddenSlotVacant = slots[0] == ArtifactTracker.SlotStatus.VACANT;
+            if (hiddenSlotVacant && slotsFilled(slots, 1, 2)) {
                 moveToPosition(0);
                 telemetry.addLine("Slots 2 & 3 full; rotating to position 1");
             }
