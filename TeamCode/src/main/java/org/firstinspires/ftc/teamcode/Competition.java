@@ -65,6 +65,8 @@ public class Competition extends LinearOpMode {
         shootingController = new ShootingController(robot, flywheelController, telemetry);
         artifactTracker = new ArtifactTracker(robot, telemetry);
 
+        String allianceColor = robot.getAllianceColor();
+
         waitForStart();
         resetRuntime();
 
@@ -75,13 +77,11 @@ public class Competition extends LinearOpMode {
 
             //Limelight Data
             LLResult result = robot.getLatestLimelightResult();
-            if (result != null) {
-                if (result.isValid()) {
-                    Pose3D botpose = result.getBotpose();
-                    telemetry.addData("tx", result.getTx());
-                    telemetry.addData("ty", result.getTy());
-                    telemetry.addData("Botpose", botpose.toString());
-                }
+            if (result != null && result.isValid()) {
+                Pose3D botpose = result.getBotpose();
+                telemetry.addData("tx", result.getTx());
+                telemetry.addData("ty", result.getTy());
+                telemetry.addData("Botpose", botpose.toString());
             }
 
             //Odometry
@@ -105,6 +105,12 @@ public class Competition extends LinearOpMode {
             //telemetry.addData("Pinpoint Frequency", robot.pinpoint.getFrequency()); //prints/gets the current refresh rate of the Pinpoint
             //telemetry.addData("REV Hub Frequency: ", frequency); //prints the control system refresh rate
 
+            double fieldHeadingRad = robot.getAllianceAdjustedHeadingRadians();
+            boolean limelightUsed = robot.wasLimelightUsedForHeading();
+            telemetry.addData("Field Heading Source", limelightUsed ? "Limelight" : "Odometry");
+            telemetry.addData("Alliance", allianceColor);
+            telemetry.addData("Field Heading (rad, driver aligned)", fieldHeadingRad);
+
             ///MECANUM DRIVE
 
             // Get joystick inputs
@@ -116,7 +122,7 @@ public class Competition extends LinearOpMode {
                 rotation = gamepad1.right_stick_x * 0.75; // Rotation - multiply by 0.75 to scale speed down
             }
 
-            robot.mecanumDrive(x, y, rotation);
+            robot.FieldCentricDrive(x, y, rotation, fieldHeadingRad);
 
             /// BUTTON MAPPING
             // D-Pad left/right = turret manual rotate
