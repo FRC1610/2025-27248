@@ -27,6 +27,12 @@ public class Judging extends LinearOpMode {
         telemetry.addLine("Judging OpMode Initialized");
         telemetry.update();
 
+        // Keep the headlight off while waiting to start
+        while (opModeInInit() && !isStopRequested()) {
+            robot.headlight.setPosition(0.0);
+            sleep(20);
+        }
+
         waitForStart();
 
         while (opModeIsActive()) {

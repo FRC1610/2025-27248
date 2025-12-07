@@ -65,6 +65,12 @@ public class Competition extends LinearOpMode {
         shootingController = new ShootingController(robot, flywheelController, telemetry);
         artifactTracker = new ArtifactTracker(robot, telemetry);
 
+        // Keep the headlight forced off during init so it does not illuminate before start
+        while (opModeInInit() && !isStopRequested()) {
+            robot.headlight.setPosition(0.0);
+            sleep(20);
+        }
+
         waitForStart();
         resetRuntime();
 
