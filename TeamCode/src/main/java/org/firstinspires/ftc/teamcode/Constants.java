@@ -52,9 +52,13 @@ public class Constants {
     public static final double kickerUp = 1.0;
 
     /// COLOR SENSOR
-    public static final double COLOR_SENSOR_PURPLE_RATIO = 1.25; // Blue must exceed red and green by this factor
-    public static final double COLOR_SENSOR_GREEN_RATIO = 1.10;   // Green must exceed blue by this factor
-    public static final double COLOR_SENSOR_DETECTION_DISTANCE_MM = 40.0;
+    public static final double COLOR_SENSOR_PURPLE_RATIO = 1.05; // Blue must exceed red and green by this factor
+    public static final double COLOR_SENSOR_GREEN_BLUE_RATIO = 1.20; // Green must exceed blue by this factor
+    public static final double COLOR_SENSOR_GREEN_RED_RATIO = 1.80;  // Green must exceed red by this factor
+    // Tuned against field samples (purple B:G ≈ 1.2–1.6, green G:B ≈ 1.2 and G:R ≈ 2.4)
+    // to keep registering balls even when the sensor happens to look into a hole
+    // instead of solid plastic.
+    public static final double COLOR_SENSOR_DETECTION_DISTANCE_MM = 55.0;
 
     ///AUTONOMOUS SETPOINTS
 

@@ -65,28 +65,23 @@ public class ArtifactTracker {
             if (indicator != null) {
                 indicator.setColor(LEDColors.OFF);
             }
+            telemetry.addData(String.format("Slot %d RGB", slot + 1), "R: --, G: --, B: --, D: --mm");
             return SlotStatus.VACANT;
         }
 
         double distance = distanceSensor.getDistance(DistanceUnit.MM);
-        if (Double.isNaN(distance) || distance > Constants.COLOR_SENSOR_DETECTION_DISTANCE_MM) {
-            if (indicator != null) {
-                indicator.setColor(LEDColors.OFF);
-            }
-            return SlotStatus.VACANT;
-        }
-
         double red = colorSensor.red();
         double green = colorSensor.green();
         double blue = colorSensor.blue();
 
-        SlotStatus status;
-        if (blue >= Constants.COLOR_SENSOR_PURPLE_RATIO * green && blue >= Constants.COLOR_SENSOR_PURPLE_RATIO * red) {
-            status = SlotStatus.PURPLE;
-        } else if (green >= Constants.COLOR_SENSOR_GREEN_RATIO * blue) {
-            status = SlotStatus.GREEN;
-        } else {
-            status = SlotStatus.VACANT;
+        SlotStatus status = SlotStatus.VACANT;
+        if (!Double.isNaN(distance) && distance <= Constants.COLOR_SENSOR_DETECTION_DISTANCE_MM) {
+            if (blue >= Constants.COLOR_SENSOR_PURPLE_RATIO * green && blue >= Constants.COLOR_SENSOR_PURPLE_RATIO * red) {
+                status = SlotStatus.PURPLE;
+            } else if (green >= Constants.COLOR_SENSOR_GREEN_BLUE_RATIO * blue
+                    && green >= Constants.COLOR_SENSOR_GREEN_RED_RATIO * red) {
+                status = SlotStatus.GREEN;
+            }
         }
 
         if (indicator != null) {
@@ -102,7 +97,8 @@ public class ArtifactTracker {
             }
         }
 
-        telemetry.addData(String.format("Slot %d RGB", slot + 1), "R: %.0f, G: %.0f, B: %.0f, D: %.1fmm", red, green, blue, distance);
+        String distanceText = Double.isNaN(distance) ? "--" : String.format("%.1f", distance);
+        telemetry.addData(String.format("Slot %d RGB", slot + 1), "R: %.0f, G: %.0f, B: %.0f, D: %smm", red, green, blue, distanceText);
         return status;
     }
 
