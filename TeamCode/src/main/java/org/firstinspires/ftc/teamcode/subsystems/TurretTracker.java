@@ -6,6 +6,9 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.Constants;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 import java.util.List;
@@ -57,12 +60,33 @@ public class TurretTracker {
         // Horizontal angle offset (tx)
         double tx = fid.getTargetXDegrees();
 
+        // Estimate distance to the target
+        double distanceFeet = Double.NaN;
+        Pose3D pose = fid.getRobotPoseTargetSpace();
+        Position position = pose != null ? pose.getPosition() : null;
+        if (position != null) {
+            Position metersPosition = position.toUnit(DistanceUnit.METER);
+            double xMeters = metersPosition.x;
+            double yMeters = metersPosition.y;
+            double zMeters = metersPosition.z;
+            double distanceMeters = Math.sqrt(xMeters * xMeters + yMeters * yMeters + zMeters * zMeters);
+            distanceFeet = distanceMeters * 3.28084;
+        }
+
+        // Apply alliance-specific far offset
+        double aimOffsetDegrees = 0.0;
+        if (!Double.isNaN(distanceFeet) && distanceFeet >= Constants.TURRET_FAR_AIM_DISTANCE_FT) {
+            aimOffsetDegrees = robot.allianceColorRed
+                    ? Constants.TURRET_FAR_AIM_OFFSET_RED_DEGREES
+                    : Constants.TURRET_FAR_AIM_OFFSET_BLUE_DEGREES;
+        }
+
         // PID timing
         double dt = timer.seconds();
         timer.reset();
 
         // PID compute
-        double error = tx;
+        double error = tx + aimOffsetDegrees;
         integral += error * dt;
         double derivative = (error - lastError) / dt;
         lastError = error;
@@ -87,6 +111,10 @@ public class TurretTracker {
         // Telemetry
         telemetry.addData("TagID", fid.getFiducialId());
         telemetry.addData("tx", tx);
+        if (!Double.isNaN(distanceFeet)) {
+            telemetry.addData("Distance (ft)", "%.2f", distanceFeet);
+        }
+        telemetry.addData("Aim Offset (deg)", aimOffsetDegrees);
         telemetry.addData("Power", power);
         telemetry.addData("TurretPos", pos);
     }
