@@ -415,6 +415,9 @@ public class RobotHardware {
         return (launcher.getVelocity() * 60.0) / (TICKS_PER_REV * Constants.LAUNCHER_GEAR_REDUCTION);
     }
 
+    public String getAllianceColor() {
+        return allianceColorBlue ? "BLUE" : "RED";
+    }
 
     public int getTurretTarget() {
         return turretTargetPosition;

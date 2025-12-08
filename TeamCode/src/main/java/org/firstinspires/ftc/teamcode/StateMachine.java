@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.DecodePaths;
 public class StateMachine {
     public enum State {
         HOME,
+        AUTO_NEAR,
         AUTO_HOME_FAR,
         AUTO_HOME_NEAR,
         AUTO_DRIVE_SHOOT_POSITION,
@@ -59,11 +60,15 @@ public class StateMachine {
         switch (currentState) {
             case HOME:
                 break;
+            case AUTO_NEAR:
+                //TODO: what i wrote above
+                break;
             case AUTO_HOME_NEAR:
                 follower.setPose(DecodePaths.BLUE_NEAR_START);
                 // reset the spindexer here if its needed
                 robot.spindexer.setPosition(spindexerPositions[spindexerIndex]);
                 robot.spindexerPos = spindexerPositions[spindexerIndex];
+                break;
             case AUTO_DRIVE_SHOOT_POSITION:
                 PathChain pathToNearShoot = Constants.buildPath(this.follower, DecodePaths.BLUE_NEAR_START, DecodePaths.BLUE_NEAR_SHOOT);
                 this.follower.followPath(pathToNearShoot, true);
