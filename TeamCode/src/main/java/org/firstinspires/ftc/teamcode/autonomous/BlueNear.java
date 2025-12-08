@@ -18,11 +18,16 @@ public class BlueNear extends LinearOpMode {
         hardware.init();
         Follower follower = Constants.createFollower(hardwareMap);
         StateMachine stateMachine = new StateMachine(hardware, follower);
+        stateMachine.init();
 
-        stateMachine.setState(StateMachine.State.AUTO_HOME_NEAR);
+        // set our home position
+        stateMachine.setState(StateMachine.State.AUTO_HOME_NEAR, true);
         //follower.setStartingPose(DecodePaths.BLUE_NEAR_START);
 
         waitForStart();
+
+        // start our auto state
+        stateMachine.setState(StateMachine.State.AUTO_NEAR);
 
         while (opModeIsActive()) {
             follower.update();

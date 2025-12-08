@@ -16,15 +16,19 @@ public class DecodePaths {
     public static final Pose RedFarShoot = new Pose(88,21, Math.toRadians(0));
 
 
-    /// BLUE CLOSE, ORIGINAL X 22.5, Y 120, HEADING 90 and X 48, Y 95, HEADING 90
-    /// NOTE: i changed the values according to how it appeared in the visualizer
-    public static final Pose BLUE_NEAR_START = new Pose(23,119.8,Math.toRadians(-90));
-    public static final Pose BLUE_NEAR_SHOOT = new Pose(45, 98, Math.toRadians(-90));
-    public static final Pose BLUE_PICKUP_NEAR_ARTIFACTS_TOP_STEP_1AND3 = new Pose(24.1, 98, Math.toRadians(-90));
-    public static final Pose BLUE_PICKUP_NEAR_ARTIFACTS_TOP_STEP_2 = new Pose(24.1, 91, Math.toRadians(-90));
+    // NOTE: i changed the values according to how it appeared in the visualizer
+
+    /// BLUE CLOSE
+    public static final Pose BLUE_NEAR_START = new Pose(23,119.8,Math.toRadians(-90)); // public static final Pose BLUE_NEAR_START = new Pose(22.5,120,Math.toRadians(90));
+    public static final Pose BLUE_NEAR_SHOOT = new Pose(45, 98, Math.toRadians(-90)); // public static final Pose BLUE_NEAR_SHOOT = new Pose(48, 95, Math.toRadians(90));
+    public static final Pose BLUE_NEAR_GOTO_ARTIFACTS = new Pose(24.1, 98, Math.toRadians(-90));
+    public static final Pose BLUE_NEAR_PICKUP_ARTIFACTS = new Pose(24.1, 91, Math.toRadians(-90));
+    public static final Pose BLUE_NEAR_LEAVE = new Pose(45, 60, Math.toRadians(180));
 
     ///  RED CLOSE
-
-    public static final Pose RedNearStart = new Pose (121,120, Math.toRadians(90));
-    public static final Pose RedNearShoot = new Pose (96,95, Math.toRadians(90));
+    public static final Pose RED_NEAR_START = new Pose(121,119.8,Math.toRadians(-90)); // public static final Pose BLUE_NEAR_START = new Pose(121,120, Math.toRadians(90));
+    public static final Pose RED_NEAR_SHOOT = new Pose(98.5, 98, Math.toRadians(-90)); // public static final Pose BLUE_NEAR_SHOOT = new Pose(96,95, Math.toRadians(90));
+    public static final Pose RED_NEAR_GOTO_ARTIFACTS = new Pose(119.9, 98, Math.toRadians(-90));
+    public static final Pose RED_NEAR_PICKUP_ARTIFACTS = new Pose(119.9, 91, Math.toRadians(-90));
+    public static final Pose RED_NEAR_LEAVE = new Pose(98.5, 60, Math.toRadians(180));
 }
