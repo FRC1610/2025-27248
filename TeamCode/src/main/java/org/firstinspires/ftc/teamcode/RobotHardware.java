@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.bylazar.configurables.PanelsConfigurables;
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
+import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -9,12 +13,10 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
-
-import com.qualcomm.hardware.limelightvision.LLResult;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drivers.rgbIndicator;
 import org.firstinspires.ftc.teamcode.drivers.rgbIndicator.LEDColors;
 
@@ -43,6 +45,8 @@ public class RobotHardware {
     public ColorSensor color3;
     public DistanceSensor distance3;
     //private AnalogInput turretPos;
+
+    private TelemetryManager panelsTelemetry;
 
     public enum IntakeDirection {
         IN,
@@ -178,6 +182,9 @@ public class RobotHardware {
         color3 = myOpMode.hardwareMap.get(RevColorSensorV3.class, "color3");
         distance3 = myOpMode.hardwareMap.get(DistanceSensor.class, "color3");
 
+        panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
+        PanelsConfigurables.INSTANCE.refreshClass(FlywheelPidfConfig.class);
+
         //Telemetry Data
         myOpMode.telemetry.addData("Status", "Initialized");
         myOpMode.telemetry.addData("X offset", pinpoint.getXOffset(DistanceUnit.MM));
@@ -263,10 +270,10 @@ public class RobotHardware {
         // Scale the motor-side PIDF gains by the gear reduction so the feedforward
         // and proportional response still match the flywheel-side setpoints that are
         // converted into motor ticks/second.
-        double gearScaledP = Constants.LAUNCHER_P * Constants.LAUNCHER_GEAR_REDUCTION;
-        double gearScaledI = Constants.LAUNCHER_I * Constants.LAUNCHER_GEAR_REDUCTION;
-        double gearScaledD = Constants.LAUNCHER_D * Constants.LAUNCHER_GEAR_REDUCTION;
-        double gearScaledF = Constants.LAUNCHER_F * Constants.LAUNCHER_GEAR_REDUCTION;
+        double gearScaledP = FlywheelPidfConfig.launcherP * Constants.LAUNCHER_GEAR_REDUCTION;
+        double gearScaledI = FlywheelPidfConfig.launcherI * Constants.LAUNCHER_GEAR_REDUCTION;
+        double gearScaledD = FlywheelPidfConfig.launcherD * Constants.LAUNCHER_GEAR_REDUCTION;
+        double gearScaledF = FlywheelPidfConfig.launcherF * Constants.LAUNCHER_GEAR_REDUCTION;
 
         PIDFCoefficients pidf = new PIDFCoefficients(
                 gearScaledP,
@@ -284,8 +291,18 @@ public class RobotHardware {
                 "%.2f, %.2f, %.2f, %.2f", pidf.p, pidf.i, pidf.d, pidf.f);
         myOpMode.telemetry.addData("Launcher PIDF base (P,I,D,F)",
                 "%.2f, %.2f, %.2f, %.2f",
-                Constants.LAUNCHER_P, Constants.LAUNCHER_I,
-                Constants.LAUNCHER_D, Constants.LAUNCHER_F);
+                FlywheelPidfConfig.launcherP, FlywheelPidfConfig.launcherI,
+                FlywheelPidfConfig.launcherD, FlywheelPidfConfig.launcherF);
+
+        if (panelsTelemetry != null) {
+            panelsTelemetry.debug("Launcher PIDF scaled (P,I,D,F)",
+                    String.format("%.2f, %.2f, %.2f, %.2f", pidf.p, pidf.i, pidf.d, pidf.f));
+            panelsTelemetry.debug("Launcher PIDF base (P,I,D,F)",
+                    String.format("%.2f, %.2f, %.2f, %.2f",
+                            FlywheelPidfConfig.launcherP, FlywheelPidfConfig.launcherI,
+                            FlywheelPidfConfig.launcherD, FlywheelPidfConfig.launcherF));
+            panelsTelemetry.update(myOpMode.telemetry);
+        }
     }
 
     /**
@@ -387,6 +404,8 @@ public class RobotHardware {
     }
 
     public void setTargetRPM(double rpm) {
+        applyLauncherPidfTuning();
+
         targetRPM = rpm;
         flywheelOn = rpm > 0;
 
