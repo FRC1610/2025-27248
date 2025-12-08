@@ -68,7 +68,7 @@ public class ShootingController {
                 }
                 break;
             case FIRE:
-                if (shootTimer.milliseconds() >= 500) {
+                if (shootTimer.milliseconds() >= 250) {
                     robot.kicker.setPosition(Constants.kickerDown);
                     shootTimer.reset();
                     shotsRemaining = Math.max(0, shotsRemaining - 1);
@@ -88,12 +88,12 @@ public class ShootingController {
                 }
                 break;
             case ADVANCE:
-                if (shootTimer.milliseconds() >= 500) {
+                if (shootTimer.milliseconds() >= 250) {
                     shootState = ShootState.WAIT_FOR_SPINUP;
                 }
                 break;
             case PRIME_NEXT:
-                if (shootTimer.milliseconds() >= 500) {
+                if (shootTimer.milliseconds() >= 250) {
                     robot.kicker.setPosition(Constants.kickerDown);
                     shootState = ShootState.IDLE;
                 }

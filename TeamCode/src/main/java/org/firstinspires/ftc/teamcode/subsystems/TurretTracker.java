@@ -81,7 +81,7 @@ public class TurretTracker {
         }
 
         // Apply power safely
-        power = Range.clip(power, -0.4, 0.4);
+        power = Range.clip(power, -0.65, 0.65);
         robot.turret.setPower(power);
 
         // Telemetry

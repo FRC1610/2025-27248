@@ -47,8 +47,6 @@ public class Competition extends LinearOpMode {
         boolean aPressed = false;
         boolean bPressed = false;
 
-        boolean dpadLeftPressed = false;
-        boolean dpadRightPressed = false;
         boolean dpadLeft2PreviouslyPressed = false;
         boolean dpadRight2PreviouslyPressed = false;
         boolean backButtonPreviouslyPressed = false;
@@ -140,7 +138,7 @@ public class Competition extends LinearOpMode {
             backButtonPreviouslyPressed = backButtonPressed;
             flywheelController.update();
 
-            boolean rightBumperPressed = gamepad2.right_bumper;
+            boolean rightBumperPressed = gamepad2.a;
             if (rightBumperPressed && !rightBumperPreviouslyPressed && shootingController.isIdle()
                     && flywheelController.isEnabled() && flywheelController.getTargetRpm() > 0) {
                 shootingController.startShootSequence();
@@ -151,8 +149,8 @@ public class Competition extends LinearOpMode {
 
             ///INTAKE
             //IntakeDirection
-            boolean IntakeForwardPressed = gamepad1.right_bumper; //Check if button pressed
-            boolean IntakeReversePressed = gamepad1.left_bumper; //Check if button pressed
+            boolean IntakeForwardPressed = gamepad2.right_bumper; //Check if button pressed
+            boolean IntakeReversePressed = gamepad2.left_bumper; //Check if button pressed
 
             if (IntakeForwardPressed){
                 robot.runIntake(RobotHardware.IntakeDirection.IN);
@@ -162,6 +160,7 @@ public class Competition extends LinearOpMode {
                 robot.runIntake(RobotHardware.IntakeDirection.STOP);
             }
 
+            /*
             // ----- Spindexer test control -----
 
             boolean dpadLeft2  = gamepad2.dpad_left;
@@ -181,9 +180,11 @@ public class Competition extends LinearOpMode {
             dpadLeft2PreviouslyPressed  = dpadLeft2;
             dpadRight2PreviouslyPressed = dpadRight2;
 
+             */
+
             if (shootingController.isIdle()) {
                 //Manual Lift Control
-                if (gamepad2.a) {
+                if (gamepad1.a) {
                     robot.kicker.setPosition(Constants.kickerUp);
                 } else {
                     robot.kicker.setPosition(Constants.kickerDown);
@@ -200,22 +201,6 @@ public class Competition extends LinearOpMode {
                     robot.spindexer.setPosition(Constants.spindexer3);
                     robot.spindexerPos = Constants.spindexer3;
                 }
-            }
-
-            // --- Toggle Close Shot ---
-            if (gamepad1.a && !aPressed) {
-                robot.toggleFlywheel(Constants.launcherClose);
-                aPressed = true;
-            } else if (!gamepad1.a) {
-                aPressed = false;
-            }
-
-            // --- Toggle Far Shot ---
-            if (gamepad1.b && !bPressed) {
-                robot.toggleFlywheel(Constants.launcherFar);
-                bPressed = true;
-            } else if (!gamepad1.b) {
-                bPressed = false;
             }
 
             telemetry.addData("Turret Flywheel Enabled", flywheelController.isEnabled());
