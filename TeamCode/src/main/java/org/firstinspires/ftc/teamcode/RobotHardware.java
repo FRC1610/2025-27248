@@ -13,7 +13,11 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import org.firstinspires.ftc.teamcode.drivers.rgbIndicator;
 import org.firstinspires.ftc.teamcode.drivers.rgbIndicator.LEDColors;
@@ -65,6 +69,8 @@ public class RobotHardware {
     // Example: GoBilda 5202/5203/5204 encoder = 28 ticks/rev
     private static final double TICKS_PER_REV = 28.0;
     private LLResult latestLimelightResult;
+    private boolean lastHeadingUsedLimelight = false;
+    private double lastFieldHeadingRadians = 0.0;
 
     // Define a constructor that allows the OpMode to pass a reference to itself.
     public RobotHardware(LinearOpMode opmode) {
@@ -206,11 +212,79 @@ public class RobotHardware {
     }
 
     /**
+     * Determine the robot's field-relative heading, preferring Limelight pose
+     * data when available and falling back to odometry heading.
+     *
+     * @return heading in radians in the field coordinate frame.
+     */
+    public double getFieldHeadingRadians() {
+        double fieldHeadingRad = 0.0;
+        lastHeadingUsedLimelight = false;
+
+        if (latestLimelightResult != null && latestLimelightResult.isValid()) {
+            Pose3D botpose = latestLimelightResult.getBotpose();
+            if (botpose != null) {
+                YawPitchRollAngles orientation = botpose.getOrientation();
+                fieldHeadingRad = orientation.getYaw(AngleUnit.RADIANS);
+                lastHeadingUsedLimelight = true;
+            }
+        }
+
+        if (!lastHeadingUsedLimelight && pinpoint != null) {
+            Pose2D pos = pinpoint.getPosition();
+            fieldHeadingRad = pos.getHeading(AngleUnit.RADIANS);
+        }
+
+        lastFieldHeadingRadians = fieldHeadingRad;
+        return fieldHeadingRad;
+    }
+
+    /**
+     * Adjust the field heading so "forward" on the sticks always means away
+     * from the drivers regardless of which alliance wall we are on.
+     * Red drivers stand on the opposite side of the field from blue drivers,
+     * so add 180 degrees when the alliance switch reports red.
+     *
+     * @return heading in radians rotated for the current alliance driver view.
+     */
+    public double getAllianceAdjustedHeadingRadians() {
+        double heading = getFieldHeadingRadians();
+
+        if (allianceColorRed) {
+            heading = AngleUnit.normalizeRadians(heading + Math.PI);
+        }
+
+        return heading;
+    }
+
+    /**
+     * True if the most recent call to {@link #getFieldHeadingRadians()} sourced
+     * its heading from the Limelight pose.
+     */
+    public boolean wasLimelightUsedForHeading() {
+        return lastHeadingUsedLimelight;
+    }
+
+    /**
+     * The most recent heading returned by {@link #getFieldHeadingRadians()}.
+     */
+    public double getLastFieldHeadingRadians() {
+        return lastFieldHeadingRadians;
+    }
+
+    /**
      * Read the alliance selector switch and set alliance colors with a blue default.
      */
     public void configureAllianceFromSwitch() {
         refreshAllianceFromSwitchState();
         rgbIndicatorMain.setColor(allianceColorRed ? LEDColors.RED : LEDColors.BLUE);
+    }
+
+    /**
+     * Return the alliance color captured during {@link #configureAllianceFromSwitch()}.
+     */
+    public String getAllianceColor() {
+        return allianceColorRed ? "RED" : "BLUE";
     }
 
     /**
@@ -335,6 +409,10 @@ public class RobotHardware {
         double rightBackPower = (rotY + rotX - rx) / denominator;
 
         setDrivePower(leftFrontPower, rightFrontPower, leftBackPower, rightBackPower);
+    }
+
+    public void FieldCentricDrive(double x, double y, double rx) {
+        FieldCentricDrive(x, y, rx, getFieldHeadingRadians());
     }
 
     /**
