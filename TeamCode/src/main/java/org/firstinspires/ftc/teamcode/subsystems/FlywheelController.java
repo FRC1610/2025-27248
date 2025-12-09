@@ -87,6 +87,8 @@ public class FlywheelController {
      * Call every loop to update the RPM based on the detected AprilTag.
      */
     public void update() {
+        robot.refreshLauncherPidfFromConfig();
+
         if (!flywheelEnabled) {
             publishPanelsFlywheelTelemetry(targetRpm, getCurrentRpm());
             return;

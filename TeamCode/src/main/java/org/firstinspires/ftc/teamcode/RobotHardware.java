@@ -66,6 +66,14 @@ public class RobotHardware {
     private boolean flywheelOn = false;
     private int turretTargetPosition = 0;
     public double spindexerPos = Constants.spindexerStart;
+    private double lastLauncherBaseP = Double.NaN;
+    private double lastLauncherBaseI = Double.NaN;
+    private double lastLauncherBaseD = Double.NaN;
+    private double lastLauncherBaseF = Double.NaN;
+    private double lastLauncherScaledP = Double.NaN;
+    private double lastLauncherScaledI = Double.NaN;
+    private double lastLauncherScaledD = Double.NaN;
+    private double lastLauncherScaledF = Double.NaN;
 
     // Example: GoBilda 5202/5203/5204 encoder = 28 ticks/rev
     private static final double TICKS_PER_REV = 28.0;
@@ -189,6 +197,7 @@ public class RobotHardware {
 
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
         PanelsConfigurables.INSTANCE.refreshClass(FlywheelPidfConfig.class);
+        refreshLauncherPidfFromConfig();
 
         //Telemetry Data
         myOpMode.telemetry.addData("Status", "Initialized");
@@ -292,6 +301,15 @@ public class RobotHardware {
                 pidf.d,
                 pidf.f);
 
+        lastLauncherBaseP = FlywheelPidfConfig.launcherP;
+        lastLauncherBaseI = FlywheelPidfConfig.launcherI;
+        lastLauncherBaseD = FlywheelPidfConfig.launcherD;
+        lastLauncherBaseF = FlywheelPidfConfig.launcherF;
+        lastLauncherScaledP = pidf.p;
+        lastLauncherScaledI = pidf.i;
+        lastLauncherScaledD = pidf.d;
+        lastLauncherScaledF = pidf.f;
+
         myOpMode.telemetry.addData("Launcher PIDF (P,I,D,F)",
                 "%.2f, %.2f, %.2f, %.2f", pidf.p, pidf.i, pidf.d, pidf.f);
         myOpMode.telemetry.addData("Launcher PIDF base (P,I,D,F)",
@@ -299,15 +317,40 @@ public class RobotHardware {
                 FlywheelPidfConfig.launcherP, FlywheelPidfConfig.launcherI,
                 FlywheelPidfConfig.launcherD, FlywheelPidfConfig.launcherF);
 
-        if (panelsTelemetry != null) {
-            panelsTelemetry.debug("Launcher PIDF scaled (P,I,D,F)",
-                    String.format("%.2f, %.2f, %.2f, %.2f", pidf.p, pidf.i, pidf.d, pidf.f));
-            panelsTelemetry.debug("Launcher PIDF base (P,I,D,F)",
-                    String.format("%.2f, %.2f, %.2f, %.2f",
-                            FlywheelPidfConfig.launcherP, FlywheelPidfConfig.launcherI,
-                            FlywheelPidfConfig.launcherD, FlywheelPidfConfig.launcherF));
-            panelsTelemetry.update(myOpMode.telemetry);
+        publishLauncherPidfTelemetry();
+    }
+
+    /**
+     * Reapply launcher PIDF values if the Panels-configured base values changed.
+     * Always publishes the latest scaled/base values to Panels so they appear live
+     * even when the setpoint is not being updated.
+     */
+    public void refreshLauncherPidfFromConfig() {
+        boolean baseChanged = FlywheelPidfConfig.launcherP != lastLauncherBaseP
+                || FlywheelPidfConfig.launcherI != lastLauncherBaseI
+                || FlywheelPidfConfig.launcherD != lastLauncherBaseD
+                || FlywheelPidfConfig.launcherF != lastLauncherBaseF;
+
+        if (baseChanged || !Double.isFinite(lastLauncherScaledP) || !Double.isFinite(lastLauncherScaledF)) {
+            applyLauncherPidfTuning();
+            return;
         }
+
+        publishLauncherPidfTelemetry();
+    }
+
+    private void publishLauncherPidfTelemetry() {
+        if (panelsTelemetry == null || !Double.isFinite(lastLauncherScaledP) || !Double.isFinite(lastLauncherScaledF)) {
+            return;
+        }
+
+        panelsTelemetry.debug("Launcher PIDF scaled (P,I,D,F)",
+                String.format("%.2f, %.2f, %.2f, %.2f",
+                        lastLauncherScaledP, lastLauncherScaledI, lastLauncherScaledD, lastLauncherScaledF));
+        panelsTelemetry.debug("Launcher PIDF base (P,I,D,F)",
+                String.format("%.2f, %.2f, %.2f, %.2f",
+                        lastLauncherBaseP, lastLauncherBaseI, lastLauncherBaseD, lastLauncherBaseF));
+        panelsTelemetry.update(myOpMode.telemetry);
     }
 
     /**
