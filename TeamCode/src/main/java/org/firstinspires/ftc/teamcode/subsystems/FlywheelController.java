@@ -33,7 +33,7 @@ public class FlywheelController {
 
     private final RobotHardware robot;
     private final Telemetry telemetry;
-    private final TelemetryManager panelsTelemetry;
+    private TelemetryManager panelsTelemetry;
     private boolean flywheelEnabled = false;
     private double targetRpm = 0.0;
 
@@ -181,6 +181,10 @@ public class FlywheelController {
     }
 
     private void publishPanelsFlywheelTelemetry(double target, double current) {
+        if (panelsTelemetry == null) {
+            panelsTelemetry = robot.getPanelsTelemetry();
+        }
+
         if (panelsTelemetry == null) {
             return;
         }
