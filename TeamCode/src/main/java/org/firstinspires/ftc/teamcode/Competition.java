@@ -203,7 +203,6 @@ public class Competition extends LinearOpMode {
 
             telemetry.addData("Turret", "enabled=%b  targetPos=%d  currentPos=%d", flywheelController.isEnabled(), robot.getTurretTarget(), robot.getTurretPosition());
             telemetry.addData("Shooter", shootingController.getShootState());
-            telemetry.addData("Color/Distance", "R:%d G:%d B:%d  D1:%.0fmm", robot.color1.red(), robot.color1.green(), robot.color1.blue(), robot.distance1.getDistance(DistanceUnit.MM));
             telemetry.addData("Spindexer", "pos=%.2f", robot.spindexerPos);
             telemetry.update();
         }

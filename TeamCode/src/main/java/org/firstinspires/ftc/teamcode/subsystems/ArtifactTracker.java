@@ -49,24 +49,27 @@ public class ArtifactTracker {
      * positions. Intended to be invoked once per TeleOp loop.
      */
     public void update() {
-        slotStatuses[0] = evaluateSensor(robot.color1, robot.distance1, robot.rearRGB1, 0);
-        slotStatuses[1] = evaluateSensor(robot.color2, robot.distance2, robot.rearRGB2, 1);
-        slotStatuses[2] = evaluateSensor(robot.color3, robot.distance3, robot.rearRGB3, 2);
+        SlotReading slot1 = evaluateSensor(robot.color1, robot.distance1, robot.rearRGB1, 0);
+        SlotReading slot2 = evaluateSensor(robot.color2, robot.distance2, robot.rearRGB2, 1);
+        SlotReading slot3 = evaluateSensor(robot.color3, robot.distance3, robot.rearRGB3, 2);
+
+        slotStatuses[0] = slot1.status;
+        slotStatuses[1] = slot2.status;
+        slotStatuses[2] = slot3.status;
 
         maybeLogStatusChange();
 
-        telemetry.addData("Spindexer Slot 1", slotStatuses[0]);
-        telemetry.addData("Spindexer Slot 2", slotStatuses[1]);
-        telemetry.addData("Spindexer Slot 3", slotStatuses[2]);
+        telemetry.addData("Slot 1", formatSlotTelemetry(slot1));
+        telemetry.addData("Slot 2", formatSlotTelemetry(slot2));
+        telemetry.addData("Slot 3", formatSlotTelemetry(slot3));
     }
 
-    private SlotStatus evaluateSensor(ColorSensor colorSensor, DistanceSensor distanceSensor, rgbIndicator indicator, int slot) {
+    private SlotReading evaluateSensor(ColorSensor colorSensor, DistanceSensor distanceSensor, rgbIndicator indicator, int slot) {
         if (colorSensor == null || distanceSensor == null) {
             if (indicator != null) {
                 indicator.setColor(LEDColors.OFF);
             }
-            telemetry.addData(String.format("Slot %d RGB", slot + 1), "R: --, G: --, B: --, D: --mm");
-            return SlotStatus.VACANT;
+            return SlotReading.missing();
         }
 
         double distance = distanceSensor.getDistance(DistanceUnit.MM);
@@ -97,9 +100,16 @@ public class ArtifactTracker {
             }
         }
 
-        String distanceText = Double.isNaN(distance) ? "--" : String.format("%.1f", distance);
-        telemetry.addData(String.format("Slot %d RGB", slot + 1), "R: %.0f, G: %.0f, B: %.0f, D: %smm", red, green, blue, distanceText);
-        return status;
+        return new SlotReading(status, red, green, blue, distance);
+    }
+
+    private String formatSlotTelemetry(SlotReading reading) {
+        return String.format("%s | R: %s G: %s B: %s | D: %smm",
+                reading.status,
+                reading.redText,
+                reading.greenText,
+                reading.blueText,
+                reading.distanceText);
     }
 
     private void maybeLogStatusChange() {
@@ -118,6 +128,38 @@ public class ArtifactTracker {
             RobotLog.ii("ArtifactTracker", "Detected Artifacts: %s, %s, %s",
                     slotStatuses[0], slotStatuses[1], slotStatuses[2]);
             lastLoggedStatuses = slotStatuses.clone();
+        }
+    }
+
+    private static class SlotReading {
+        final SlotStatus status;
+        final double red;
+        final double green;
+        final double blue;
+        final double distanceMm;
+        final String redText;
+        final String greenText;
+        final String blueText;
+        final String distanceText;
+
+        SlotReading(SlotStatus status, double red, double green, double blue, double distanceMm) {
+            this.status = status;
+            this.red = red;
+            this.green = green;
+            this.blue = blue;
+            this.distanceMm = distanceMm;
+            this.redText = formatChannel(red);
+            this.greenText = formatChannel(green);
+            this.blueText = formatChannel(blue);
+            this.distanceText = Double.isNaN(distanceMm) ? "--" : String.format("%.1f", distanceMm);
+        }
+
+        static SlotReading missing() {
+            return new SlotReading(SlotStatus.VACANT, Double.NaN, Double.NaN, Double.NaN, Double.NaN);
+        }
+
+        private static String formatChannel(double value) {
+            return Double.isNaN(value) ? "--" : String.format("%.0f", value);
         }
     }
 }
