@@ -95,9 +95,7 @@ public class Competition extends LinearOpMode {
             double VelY = robot.pinpoint.getVelY(DistanceUnit.MM);
             double headingVel = robot.pinpoint.getHeadingVelocity(UnnormalizedAngleUnit.DEGREES);
 
-            telemetry.addData("X Vel (mm/s)", VelX);
-            telemetry.addData("Y Vel (mm/s)", VelY);
-            telemetry.addData("Heading Vel (rad/s)", headingVel);
+            telemetry.addData("Velocities (mm/s,deg/s)", "X: %.0f  Y: %.0f  H: %.1f", VelX, VelY, headingVel);
 
             telemetry.addData("Status", robot.pinpoint.getDeviceStatus());
             //telemetry.addData("Pinpoint Frequency", robot.pinpoint.getFrequency()); //prints/gets the current refresh rate of the Pinpoint
@@ -203,15 +201,10 @@ public class Competition extends LinearOpMode {
                 }
             }
 
-            telemetry.addData("Turret Flywheel Enabled", flywheelController.isEnabled());
-            telemetry.addData("Turret Target RPM", "%.0f", flywheelController.getTargetRpm());
-            telemetry.addData("Turret Current RPM", "%.0f", flywheelController.getCurrentRpm());
-            telemetry.addData("Shoot State", shootingController.getShootState());
-            telemetry.addData("Turret Target Pos", robot.getTurretTarget());
-            telemetry.addData("Turret Current Pos", robot.getTurretPosition());
-            telemetry.addData("Color1 RGB", "R: %d  G: %d  B: %d", robot.color1.red(), robot.color1.green(), robot.color1.blue());
-            telemetry.addData("Distance1: ", robot.distance1.getDistance(DistanceUnit.MM));
-            telemetry.addData("Spindexer Position", robot.spindexerPos);
+            telemetry.addData("Turret", "enabled=%b  targetPos=%d  currentPos=%d", flywheelController.isEnabled(), robot.getTurretTarget(), robot.getTurretPosition());
+            telemetry.addData("Shooter", shootingController.getShootState());
+            telemetry.addData("Color/Distance", "R:%d G:%d B:%d  D1:%.0fmm", robot.color1.red(), robot.color1.green(), robot.color1.blue(), robot.distance1.getDistance(DistanceUnit.MM));
+            telemetry.addData("Spindexer", "pos=%.2f", robot.spindexerPos);
             telemetry.update();
         }
     }
