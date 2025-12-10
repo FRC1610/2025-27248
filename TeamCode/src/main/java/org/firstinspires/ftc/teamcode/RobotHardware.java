@@ -354,10 +354,10 @@ public class RobotHardware {
         }
 
         panelsTelemetry.debug("Launcher PIDF scaled (P,I,D,F)",
-                String.format("P=%.2f I=%.2f D=%.2f F=%.2f",
+                String.format("P=%.3f I=%.3f D=%.3f F=%.3f",
                         lastLauncherScaledP, lastLauncherScaledI, lastLauncherScaledD, lastLauncherScaledF));
         panelsTelemetry.debug("Launcher PIDF base (P,I,D,F)",
-                String.format("P=%.2f I=%.2f D=%.2f F=%.2f",
+                String.format("P=%.3f I=%.3f D=%.3f F=%.3f",
                         lastLauncherBaseP, lastLauncherBaseI, lastLauncherBaseD, lastLauncherBaseF));
     }
 
