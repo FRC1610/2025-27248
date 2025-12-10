@@ -58,7 +58,7 @@ public class TurretTracker {
         double tx = fid.getTargetXDegrees();
 
         // Compute distance to target from camera pose (meters → feet)
-        double[] cameraSpacePose = fid.getTargetPose_CameraSpace();
+        double[] cameraSpacePose = fid.getTargetPoseCameraSpace();
         double distanceFeet = Double.NaN;
         if (cameraSpacePose != null && cameraSpacePose.length >= 3) {
             double distanceMeters = Math.sqrt(
