@@ -104,11 +104,10 @@ public class TurretTracker {
         robot.turret.setPower(power);
 
         // Telemetry
-        telemetry.addData("TagID", fid.getFiducialId());
-        if (Double.isFinite(distanceFeet)) {
-            telemetry.addData("Target distance (ft)", distanceFeet);
-        }
-        telemetry.addData("Aim offset", aimOffset);
-        telemetry.addData("Power", power);
+        String distanceText = Double.isFinite(distanceFeet)
+                ? String.format("%.2f ft", distanceFeet)
+                : "n/a";
+        telemetry.addData("Turret", "id=%d dist=%s aim=%.3f power=%.3f",
+                fid.getFiducialId(), distanceText, aimOffset, power);
     }
 }
