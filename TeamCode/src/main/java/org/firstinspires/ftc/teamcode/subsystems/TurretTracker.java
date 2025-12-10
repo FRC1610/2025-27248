@@ -11,6 +11,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.Constants;
 import org.firstinspires.ftc.teamcode.RobotHardware;
+import java.util.Locale;
 import java.util.List;
 
 public class TurretTracker {
@@ -66,9 +67,10 @@ public class TurretTracker {
         if (cameraSpacePose != null) {
             Position position = cameraSpacePose.getPosition();
             if (position != null) {
-                double x = position.getX(DistanceUnit.METER);
-                double y = position.getY(DistanceUnit.METER);
-                double z = position.getZ(DistanceUnit.METER);
+                Position positionMeters = position.toUnit(DistanceUnit.METER);
+                double x = positionMeters.x;
+                double y = positionMeters.y;
+                double z = positionMeters.z;
                 double distanceMeters = Math.sqrt(x * x + y * y + z * z);
                 distanceFeet = distanceMeters * 3.28084;
             }
@@ -111,7 +113,7 @@ public class TurretTracker {
 
         // Telemetry
         String distanceText = Double.isFinite(distanceFeet)
-                ? String.format("%.2f ft", distanceFeet)
+                ? String.format(Locale.US, "%.2f ft", distanceFeet)
                 : "n/a";
         telemetry.addData("Turret", "id=%d dist=%s aim=%.3f power=%.3f",
                 fid.getFiducialId(), distanceText, aimOffset, power);
