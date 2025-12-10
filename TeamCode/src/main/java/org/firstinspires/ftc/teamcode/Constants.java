@@ -46,6 +46,9 @@ public class Constants {
     public static final int turret_MAX = 975;  //clockwise from above starting facing opposite intake
     public static final int turret_OBELISK_LEFT_LIMIT = -600;
     public static final int turret_OBELISK_RIGHT_LIMIT = 600;
+    public static final double turret_FAR_AIM_DISTANCE_FEET = 8.0;
+    public static final double turret_FAR_AIM_ADJUST_BLUE = -0.05; // aim left when distance exceeds threshold
+    public static final double turret_FAR_AIM_ADJUST_RED = 0.05; // aim right when distance exceeds threshold
 
     ///  KICKER POSITIONS
     public static final double kickerDown = 0.0;

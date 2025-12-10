@@ -6,8 +6,12 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.Constants;
 import org.firstinspires.ftc.teamcode.RobotHardware;
+import java.util.Locale;
 import java.util.List;
 
 public class TurretTracker {
@@ -57,6 +61,29 @@ public class TurretTracker {
         // Horizontal angle offset (tx)
         double tx = fid.getTargetXDegrees();
 
+        // Compute distance to target from camera pose (meters → feet)
+        Pose3D cameraSpacePose = fid.getTargetPoseCameraSpace();
+        double distanceFeet = Double.NaN;
+        if (cameraSpacePose != null) {
+            Position position = cameraSpacePose.getPosition();
+            if (position != null) {
+                Position positionMeters = position.toUnit(DistanceUnit.METER);
+                double x = positionMeters.x;
+                double y = positionMeters.y;
+                double z = positionMeters.z;
+                double distanceMeters = Math.sqrt(x * x + y * y + z * z);
+                distanceFeet = distanceMeters * 3.28084;
+            }
+        }
+
+        double aimOffset = 0.0;
+        if (Double.isFinite(distanceFeet) && distanceFeet > Constants.turret_FAR_AIM_DISTANCE_FEET) {
+            aimOffset = robot.allianceColorRed
+                    ? TurretAimConfig.turretFarAimAdjustRed
+                    : TurretAimConfig.turretFarAimAdjustBlue;
+            tx += aimOffset;
+        }
+
         // PID timing
         double dt = timer.seconds();
         timer.reset();
@@ -85,7 +112,10 @@ public class TurretTracker {
         robot.turret.setPower(power);
 
         // Telemetry
-        telemetry.addData("TagID", fid.getFiducialId());
-        telemetry.addData("Power", power);
+        String distanceText = Double.isFinite(distanceFeet)
+                ? String.format(Locale.US, "%.2f ft", distanceFeet)
+                : "n/a";
+        telemetry.addData("Turret", "id=%d dist=%s aim=%.3f power=%.3f",
+                fid.getFiducialId(), distanceText, aimOffset, power);
     }
 }
