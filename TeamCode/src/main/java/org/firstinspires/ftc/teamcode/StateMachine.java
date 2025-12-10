@@ -7,6 +7,7 @@ import com.pedropathing.paths.PathChain;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.pedroPathing.DecodePaths;
 import org.firstinspires.ftc.teamcode.subsystems.FlywheelController;
+import org.firstinspires.ftc.teamcode.subsystems.FindGoal;
 import org.firstinspires.ftc.teamcode.subsystems.ShootingController;
 import org.firstinspires.ftc.teamcode.subsystems.TurretTracker;
 
@@ -34,6 +35,7 @@ public class StateMachine {
     private final ShootingController shootingController;
     private final FlywheelController flywheelController;
     private final TurretTracker turretTracker;
+    private final FindGoal findGoal;
 
     private int autoNearSubStep = 0;
     private boolean autoNearShootStarted = false;
@@ -51,6 +53,7 @@ public class StateMachine {
         this.shootingController = shootingController;
         this.flywheelController = flywheelController;
         this.turretTracker = turretTracker;
+        this.findGoal = new FindGoal(hardware);
     }
 
     public StateMachine(RobotHardware hardware, Follower follower, ShootingController shootingController) {
@@ -131,6 +134,13 @@ public class StateMachine {
                                 flywheelController.toggle();
                             }
                             flywheelController.update();
+                        }
+
+                        if (findGoal != null) {
+                            boolean turretReady = findGoal.updateAndIsDone();
+                            if (!turretReady) {
+                                break;
+                            }
                         }
 
                         autoNearSubStep++;
