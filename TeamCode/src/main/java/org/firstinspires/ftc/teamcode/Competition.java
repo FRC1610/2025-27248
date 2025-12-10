@@ -44,11 +44,11 @@ public class Competition extends LinearOpMode {
         double y;
         double rotation;
 
-        boolean aPressed = false;
-        boolean bPressed = false;
+        //boolean aPressed = false;
+        //boolean bPressed = false;
 
-        boolean dpadLeft2PreviouslyPressed = false;
-        boolean dpadRight2PreviouslyPressed = false;
+        // boolean dpadLeft2PreviouslyPressed = false;
+        // dpadRight2PreviouslyPressed = false;
         boolean backButtonPreviouslyPressed = false;
         boolean rightBumperPreviouslyPressed = false;
 
