@@ -55,18 +55,6 @@ public class StateMachine {
         this.turretTracker = turretTracker;
         this.findGoal = new FindGoal(hardware);
     }
-
-    public StateMachine(RobotHardware hardware, Follower follower, ShootingController shootingController) {
-        this(hardware, follower, shootingController, null, null);
-    }
-
-    public StateMachine(RobotHardware hardware, Follower follower) {
-        this(hardware, follower, null, null, null);
-    }
-
-    public StateMachine(RobotHardware hardware) {
-        this(hardware, null, null, null, null);
-    }
     public void setState(State state, boolean doUpdate) {
         this.currentState = state;
 
@@ -126,9 +114,6 @@ public class StateMachine {
             case AUTO_NEAR:
                 switch (autoNearSubStep) {
                     case 0:
-                        // Go from near goal to shooting point
-                        this.follower.followPath(paths.get(AUTO_PATHS.NEAR_PATH_TO_SHOOT_AREA), true);
-
                         if (flywheelController != null) {
                             if (!flywheelController.isEnabled()) {
                                 flywheelController.toggle();
@@ -136,16 +121,17 @@ public class StateMachine {
                             flywheelController.update();
                         }
 
-                        if (findGoal != null) {
-                            boolean turretReady = findGoal.updateAndIsDone();
-                            if (!turretReady) {
-                                break;
-                            }
-                        }
+                        this.follower.followPath(paths.get(AUTO_PATHS.NEAR_PATH_TO_SHOOT_AREA), true);
 
                         autoNearSubStep++;
                         break;
                     case 1:
+                        boolean turretReady = findGoal.updateAndIsDone();
+                        if (turretReady) {
+                            autoNearSubStep++;
+                        }
+                        break;
+                    case 2:
                         // Auto shoot preloaded artifacts
                         if (!this.follower.isBusy()) {
                             // update the tracker
@@ -179,28 +165,28 @@ public class StateMachine {
                             }
                         }
                         break;
-                    case 2:
+                    case 3:
                         if (!this.follower.isBusy()) {
                             this.follower.followPath(paths.get(AUTO_PATHS.NEAR_SHOOT_AREA_TO_CLOSEST_ARTIFACTS), true);
                             //TODO: run intake
                             autoNearSubStep++;
                         }
                         break;
-                    case 3:
+                    case 4:
                         if (!this.follower.isBusy()) {
                             this.follower.followPath(paths.get(AUTO_PATHS.NEAR_PICKUP_CLOSEST_ARTIFACTS), true);
                             //TODO: stop intake after path is finished
                             autoNearSubStep++;
                         }
                         break;
-                    case 4:
+                    case 5:
                         if (!this.follower.isBusy()) {
                             this.follower.followPath(paths.get(AUTO_PATHS.NEAR_PICKUP_TO_SHOOT_AREA), true);
                             //TODO: Shoot sequence here
                             autoNearSubStep++;
                         }
                         break;
-                    case 5:
+                    case 6:
                         if (!this.follower.isBusy()) {
                             this.follower.followPath(paths.get(AUTO_PATHS.NEAR_LEAVE_SHOOT_AREA), true);
                             autoNearSubStep++;
