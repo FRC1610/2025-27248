@@ -189,7 +189,6 @@ public class FlywheelController {
             return;
         }
 
-        panelsTelemetry.debug("Flywheel Target RPM", String.format("%.0f", target));
-        panelsTelemetry.debug("Flywheel Current RPM", String.format("%.0f", current));
+        panelsTelemetry.debug("Flywheel RPM (target/current)", String.format("%.0f / %.0f", target, current));
     }
 }

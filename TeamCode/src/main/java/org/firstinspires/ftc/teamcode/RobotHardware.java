@@ -326,13 +326,6 @@ public class RobotHardware {
         lastLauncherScaledD = pidf.d;
         lastLauncherScaledF = pidf.f;
 
-        myOpMode.telemetry.addData("Launcher PIDF (P,I,D,F)",
-                "%.2f, %.2f, %.2f, %.2f", pidf.p, pidf.i, pidf.d, pidf.f);
-        myOpMode.telemetry.addData("Launcher PIDF base (P,I,D,F)",
-                "%.2f, %.2f, %.2f, %.2f",
-                FlywheelPidfConfig.launcherP, FlywheelPidfConfig.launcherI,
-                FlywheelPidfConfig.launcherD, FlywheelPidfConfig.launcherF);
-
         publishLauncherPidfTelemetry();
     }
 
@@ -361,10 +354,10 @@ public class RobotHardware {
         }
 
         panelsTelemetry.debug("Launcher PIDF scaled (P,I,D,F)",
-                String.format("%.2f, %.2f, %.2f, %.2f",
+                String.format("P=%.2f I=%.2f D=%.2f F=%.2f",
                         lastLauncherScaledP, lastLauncherScaledI, lastLauncherScaledD, lastLauncherScaledF));
         panelsTelemetry.debug("Launcher PIDF base (P,I,D,F)",
-                String.format("%.2f, %.2f, %.2f, %.2f",
+                String.format("P=%.2f I=%.2f D=%.2f F=%.2f",
                         lastLauncherBaseP, lastLauncherBaseI, lastLauncherBaseD, lastLauncherBaseF));
     }
 
