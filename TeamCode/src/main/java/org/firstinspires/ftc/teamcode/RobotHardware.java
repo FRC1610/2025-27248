@@ -21,6 +21,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drivers.rgbIndicator;
 import org.firstinspires.ftc.teamcode.drivers.rgbIndicator.LEDColors;
 import org.firstinspires.ftc.teamcode.subsystems.FlywheelPidfConfig;
+import org.firstinspires.ftc.teamcode.subsystems.TurretAimConfig;
 
 public class RobotHardware {
 
@@ -212,6 +213,7 @@ public class RobotHardware {
 
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
         PanelsConfigurables.INSTANCE.refreshClass(FlywheelPidfConfig.class);
+        PanelsConfigurables.INSTANCE.refreshClass(TurretAimConfig.class);
         refreshLauncherPidfFromConfig();
         flushPanelsTelemetry(myOpMode.telemetry);
 

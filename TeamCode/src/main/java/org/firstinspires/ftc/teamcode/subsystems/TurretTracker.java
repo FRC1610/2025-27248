@@ -57,6 +57,25 @@ public class TurretTracker {
         // Horizontal angle offset (tx)
         double tx = fid.getTargetXDegrees();
 
+        // Compute distance to target from camera pose (meters → feet)
+        double[] cameraSpacePose = fid.getTargetPose_CameraSpace();
+        double distanceFeet = Double.NaN;
+        if (cameraSpacePose != null && cameraSpacePose.length >= 3) {
+            double distanceMeters = Math.sqrt(
+                    cameraSpacePose[0] * cameraSpacePose[0]
+                            + cameraSpacePose[1] * cameraSpacePose[1]
+                            + cameraSpacePose[2] * cameraSpacePose[2]);
+            distanceFeet = distanceMeters * 3.28084;
+        }
+
+        double aimOffset = 0.0;
+        if (Double.isFinite(distanceFeet) && distanceFeet > Constants.turret_FAR_AIM_DISTANCE_FEET) {
+            aimOffset = robot.allianceColorRed
+                    ? TurretAimConfig.turretFarAimAdjustRed
+                    : TurretAimConfig.turretFarAimAdjustBlue;
+            tx += aimOffset;
+        }
+
         // PID timing
         double dt = timer.seconds();
         timer.reset();
@@ -86,6 +105,10 @@ public class TurretTracker {
 
         // Telemetry
         telemetry.addData("TagID", fid.getFiducialId());
+        if (Double.isFinite(distanceFeet)) {
+            telemetry.addData("Target distance (ft)", distanceFeet);
+        }
+        telemetry.addData("Aim offset", aimOffset);
         telemetry.addData("Power", power);
     }
 }
