@@ -7,7 +7,6 @@ import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.geometry.Vector;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -75,12 +74,12 @@ public class BlueNear extends LinearOpMode {
         field.moveCursor(pose.getX(), pose.getY());
         field.circle(9);
 
-        Vector heading = pose.getHeadingAsUnitVector();
-        heading.setMagnitude(heading.getMagnitude() * 9);
-        double x1 = pose.getX() + heading.getXComponent() / 2;
-        double y1 = pose.getY() + heading.getYComponent() / 2;
-        double x2 = pose.getX() + heading.getXComponent();
-        double y2 = pose.getY() + heading.getYComponent();
+        double headingX = Math.cos(pose.getHeading());
+        double headingY = Math.sin(pose.getHeading());
+        double x1 = pose.getX() + headingX * 4.5;
+        double y1 = pose.getY() + headingY * 4.5;
+        double x2 = pose.getX() + headingX * 9;
+        double y2 = pose.getY() + headingY * 9;
 
         field.setStyle(robotLook);
         field.moveCursor(x1, y1);
