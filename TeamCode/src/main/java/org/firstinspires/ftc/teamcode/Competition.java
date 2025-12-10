@@ -76,8 +76,7 @@ public class Competition extends LinearOpMode {
             if (result != null) {
                 if (result.isValid()) {
                     Pose3D botpose = result.getBotpose();
-                    telemetry.addData("tx", result.getTx());
-                    telemetry.addData("ty", result.getTy());
+                    telemetry.addData("tx/ty", "tx: %.2f ty: %.2f", result.getTx(), result.getTy());
                     telemetry.addData("Botpose", botpose.toString());
                 }
             }
