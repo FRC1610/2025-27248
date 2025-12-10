@@ -104,8 +104,9 @@ public class StateMachine {
             case HOME:
                 break;
             case AUTO_HOME_NEAR:
-                this.follower.setStartingPose(DecodePaths.BLUE_NEAR_START);
-                //follower.setPose(DecodePaths.BLUE_NEAR_START);
+                Pose startPose = robot.allianceColorBlue ? DecodePaths.BLUE_NEAR_START : DecodePaths.RED_NEAR_START;
+                this.follower.setStartingPose(startPose);
+                //follower.setPose(startPose);
                 // reset the spindexer here if its needed
                 this.robot.spindexer.setPosition(spindexerPositions[spindexerIndex]);
                 this.robot.spindexerPos = spindexerPositions[spindexerIndex];
