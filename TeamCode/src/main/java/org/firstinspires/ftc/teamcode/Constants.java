@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 public class Constants {
 
-    public static final double headlightPower = 0.10;
+    public static final double headlightPower = 1;
 
     ///INTAKE SETPOINTS
 
@@ -25,10 +25,10 @@ public class Constants {
     // Bump the base gains to improve spin-up authority after gear scaling and
     // compensate for wheel inertia; tune at the motor side, then scale by the
     // reduction before applying to the flywheel velocity loop.
-    public static final double LAUNCHER_F = 44.0;    // Stronger feedforward to reach setpoint
-    public static final double LAUNCHER_P = 6.0;    // Tighter proportional correction // original 12
-    public static final double LAUNCHER_I = 0.025;    // Small I to clean steady-state error //original 0.05
-    public static final double LAUNCHER_D = 0.30;     // Slightly more damping for step changes  //original 0.6
+    public static final double LAUNCHER_F = 40.0;    // Stronger feedforward to reach setpoint
+    public static final double LAUNCHER_P = 0.002;    // Tighter proportional correction // original 12
+    public static final double LAUNCHER_I = 0.0001;    // Small I to clean steady-state error //original 0.05
+    public static final double LAUNCHER_D = 0.001;     // Slightly more damping for step changes  //original 0.6
 
     ///  SPINDEXER SETPOINTS
     public static final double spindexerStart = 0.76;

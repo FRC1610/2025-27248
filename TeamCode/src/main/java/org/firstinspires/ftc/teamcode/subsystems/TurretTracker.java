@@ -86,8 +86,6 @@ public class TurretTracker {
 
         // Telemetry
         telemetry.addData("TagID", fid.getFiducialId());
-        telemetry.addData("tx", tx);
         telemetry.addData("Power", power);
-        telemetry.addData("TurretPos", pos);
     }
 }

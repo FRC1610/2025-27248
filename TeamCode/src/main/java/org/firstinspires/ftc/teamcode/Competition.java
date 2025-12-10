@@ -44,11 +44,11 @@ public class Competition extends LinearOpMode {
         double y;
         double rotation;
 
-        boolean aPressed = false;
-        boolean bPressed = false;
+        //boolean aPressed = false;
+        //boolean bPressed = false;
 
-        boolean dpadLeft2PreviouslyPressed = false;
-        boolean dpadRight2PreviouslyPressed = false;
+        // boolean dpadLeft2PreviouslyPressed = false;
+        // dpadRight2PreviouslyPressed = false;
         boolean backButtonPreviouslyPressed = false;
         boolean rightBumperPreviouslyPressed = false;
 
@@ -76,8 +76,7 @@ public class Competition extends LinearOpMode {
             if (result != null) {
                 if (result.isValid()) {
                     Pose3D botpose = result.getBotpose();
-                    telemetry.addData("tx", result.getTx());
-                    telemetry.addData("ty", result.getTy());
+                    telemetry.addData("tx/ty", "tx: %.2f ty: %.2f", result.getTx(), result.getTy());
                     telemetry.addData("Botpose", botpose.toString());
                 }
             }
@@ -95,11 +94,9 @@ public class Competition extends LinearOpMode {
             double VelY = robot.pinpoint.getVelY(DistanceUnit.MM);
             double headingVel = robot.pinpoint.getHeadingVelocity(UnnormalizedAngleUnit.DEGREES);
 
-            telemetry.addData("X Vel (mm/s)", VelX);
-            telemetry.addData("Y Vel (mm/s)", VelY);
-            telemetry.addData("Heading Vel (rad/s)", headingVel);
+            telemetry.addData("Velocities (mm/s,deg/s)", "X: %.0f  Y: %.0f  H: %.1f", VelX, VelY, headingVel);
 
-            telemetry.addData("Status", robot.pinpoint.getDeviceStatus());
+            //telemetry.addData("Status", robot.pinpoint.getDeviceStatus());
             //telemetry.addData("Pinpoint Frequency", robot.pinpoint.getFrequency()); //prints/gets the current refresh rate of the Pinpoint
             //telemetry.addData("REV Hub Frequency: ", frequency); //prints the control system refresh rate
 
@@ -203,15 +200,10 @@ public class Competition extends LinearOpMode {
                 }
             }
 
-            telemetry.addData("Turret Flywheel Enabled", flywheelController.isEnabled());
-            telemetry.addData("Turret Target RPM", "%.0f", flywheelController.getTargetRpm());
-            telemetry.addData("Turret Current RPM", "%.0f", flywheelController.getCurrentRpm());
-            telemetry.addData("Shoot State", shootingController.getShootState());
-            telemetry.addData("Turret Target Pos", robot.getTurretTarget());
-            telemetry.addData("Turret Current Pos", robot.getTurretPosition());
-            telemetry.addData("Color1 RGB", "R: %d  G: %d  B: %d", robot.color1.red(), robot.color1.green(), robot.color1.blue());
-            telemetry.addData("Distance1: ", robot.distance1.getDistance(DistanceUnit.MM));
-            telemetry.addData("Spindexer Position", robot.spindexerPos);
+            telemetry.addData("Turret", "enabled=%b  targetPos=%d  currentPos=%d", flywheelController.isEnabled(), robot.getTurretTarget(), robot.getTurretPosition());
+            telemetry.addData("Shooter", shootingController.getShootState());
+            telemetry.addData("Spindexer", "pos=%.2f", robot.spindexerPos);
+            robot.flushPanelsTelemetry(telemetry);
             telemetry.update();
         }
     }

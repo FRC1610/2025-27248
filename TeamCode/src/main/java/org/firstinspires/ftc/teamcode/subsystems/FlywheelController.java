@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -32,6 +33,7 @@ public class FlywheelController {
 
     private final RobotHardware robot;
     private final Telemetry telemetry;
+    private TelemetryManager panelsTelemetry;
     private boolean flywheelEnabled = false;
     private double targetRpm = 0.0;
 
@@ -43,6 +45,7 @@ public class FlywheelController {
                               Telemetry telemetry) {
         this.robot = robot;
         this.telemetry = telemetry;
+        this.panelsTelemetry = robot.getPanelsTelemetry();
     }
 
      /**
@@ -84,7 +87,10 @@ public class FlywheelController {
      * Call every loop to update the RPM based on the detected AprilTag.
      */
     public void update() {
+        robot.refreshLauncherPidfFromConfig();
+
         if (!flywheelEnabled) {
+            publishPanelsFlywheelTelemetry(targetRpm, getCurrentRpm());
             return;
         }
 
@@ -122,13 +128,14 @@ public class FlywheelController {
                     }
 
                     telemetry.addData("Flywheel Distance (ft)", "%.2f", distanceFeet);
-                    telemetry.addData("Flywheel Target RPM", rpm);
                 }
             }
         }
 
         rpm = Math.max(rpm, Constants.DEFAULT_RPM);
         setFlywheelRpm(rpm);
+
+        publishPanelsFlywheelTelemetry(targetRpm, getCurrentRpm());
 
         if (measuringSpinup && isAtSpeed(Constants.FLYWHEEL_TOLERANCE_RPM)) {
             double elapsedSeconds = spinupTimer.seconds();
@@ -145,6 +152,8 @@ public class FlywheelController {
             launcherMotor.setVelocity(0);
             launcherMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
+
+        publishPanelsFlywheelTelemetry(targetRpm, getCurrentRpm());
     }
 
     private void setFlywheelRpm(double rpm) {
@@ -168,5 +177,17 @@ public class FlywheelController {
 
     private double rpmToTicksPerSecond(double rpm) {
         return (rpm * TICKS_PER_REV) / 60.0;
+    }
+
+    private void publishPanelsFlywheelTelemetry(double target, double current) {
+        if (panelsTelemetry == null) {
+            panelsTelemetry = robot.getPanelsTelemetry();
+        }
+
+        if (panelsTelemetry == null) {
+            return;
+        }
+
+        panelsTelemetry.debug("Flywheel RPM (target/current)", String.format("%.0f / %.0f", target, current));
     }
 }
