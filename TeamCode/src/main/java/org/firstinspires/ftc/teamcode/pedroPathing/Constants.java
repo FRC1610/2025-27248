@@ -7,6 +7,9 @@ import com.pedropathing.follower.FollowerConstants;
 import com.pedropathing.ftc.FollowerBuilder;
 import com.pedropathing.ftc.drivetrains.MecanumConstants;
 import com.pedropathing.ftc.localization.constants.PinpointConstants;
+import com.pedropathing.geometry.BezierLine;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.PathChain;
 import com.pedropathing.paths.PathConstraints;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -46,6 +49,7 @@ public class Constants {
                 .pinpointLocalizer(localizerConstants)
                 .build();
     }
+
     public static PinpointConstants localizerConstants = new PinpointConstants()
             .forwardPodY(-3.375)
             .strafePodX(5.5625)
@@ -55,4 +59,10 @@ public class Constants {
             .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
+    public static PathChain buildPath(Follower follower, Pose pose1, Pose pose2) {
+        return follower.pathBuilder(pathConstraints)
+                .addPath(new BezierLine(pose1, pose2))
+                .setLinearHeadingInterpolation(pose1.getHeading(), pose2.getHeading())
+                .build();
+    }
 }

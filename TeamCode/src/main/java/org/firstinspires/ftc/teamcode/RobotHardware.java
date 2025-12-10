@@ -513,13 +513,12 @@ public class RobotHardware {
     }
 
     public void runIntake(IntakeDirection Direction) {
-            if (Direction == IntakeDirection.OUT) {
-                intake.setPower(Constants.intakeReversePower);
-            } else if (Direction == IntakeDirection.IN){
-                intake.setPower(Constants.intakeForwardPower);
-            } else if (Direction == IntakeDirection.STOP) {
-                intake.setPower(0.0);
-            }
+        if (Direction == IntakeDirection.OUT) {
+            intake.setPower(Constants.intakeReversePower);
+        } else if (Direction == IntakeDirection.IN){
+            intake.setPower(Constants.intakeForwardPower);
+        } else if (Direction == IntakeDirection.STOP) {
+            intake.setPower(0.0);
         }
     }
-
+}

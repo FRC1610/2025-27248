@@ -107,6 +107,16 @@ public class ShootingController {
         telemetry.addData("Shots Remaining", shotsRemaining);
     }
 
+    /**
+     * Update the shooting sequence and report when the full firing cycle has finished.
+     *
+     * @return true once the controller has completed the queued shots and returned to IDLE
+     */
+    public boolean updateAndIsComplete() {
+        update();
+        return shootState == ShootState.IDLE && shotsRemaining == 0;
+    }
+
     public boolean isIdle() {
         return shootState == ShootState.IDLE;
     }
