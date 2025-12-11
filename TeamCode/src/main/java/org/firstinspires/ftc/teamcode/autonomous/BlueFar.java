@@ -1,71 +1,67 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
-import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.field.FieldManager;
+import com.bylazar.field.PanelsField;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierCurve;
-import com.pedropathing.geometry.BezierLine;
-import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
+import org.firstinspires.ftc.teamcode.RobotHardware;
+import org.firstinspires.ftc.teamcode.StateMachine;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.subsystems.FlywheelController;
+import org.firstinspires.ftc.teamcode.subsystems.ShootingController;
+import org.firstinspires.ftc.teamcode.subsystems.TurretTracker;
 
-@Autonomous(name = "Blue Far", group = "Autonomous")
-@Configurable // Panels
-public class BlueFar extends OpMode {
-
-    private TelemetryManager panelsTelemetry; // Panels Telemetry instance
-    public Follower follower; // Pedro Pathing follower instance
-    private int pathState; // Current autonomous path state (state machine)
-    private Paths paths; // Paths defined in the Paths class
+@Autonomous(name = "Blue Far", group = "Auto V1")
+public class BlueFar extends LinearOpMode {
+    RobotHardware hardware = new RobotHardware(this);
+    TelemetryManager panelsTelemetry;
+    FieldManager panelsField;
 
     @Override
-    public void init() {
+    public void runOpMode() {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
+        panelsField = PanelsField.INSTANCE.getField();
+        panelsField.setOffsets(PanelsField.INSTANCE.getPresets().getPEDRO_PATHING());
 
-        follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(new Pose(72, 8, Math.toRadians(90)));
+        hardware.init();
 
-        paths = new Paths(follower); // Build paths
+        FlywheelController flywheelController = new FlywheelController(hardware, telemetry);
+        ShootingController shootingController = new ShootingController(hardware, flywheelController, telemetry);
+        TurretTracker turretTracker = new TurretTracker(hardware, telemetry);
+        Follower follower = Constants.createFollower(hardwareMap);
+        StateMachine stateMachine = new StateMachine(hardware, follower, shootingController, flywheelController, turretTracker);
+        Drawer drawer = new Drawer(panelsField, follower);
 
-        panelsTelemetry.debug("Status", "Initialized");
-        panelsTelemetry.update(telemetry);
-    }
+        stateMachine.init();
 
-    @Override
-    public void loop() {
-        follower.update(); // Update Pedro Pathing
-        pathState = autonomousPathUpdate(); // Update autonomous state machine
+        stateMachine.setState(StateMachine.State.AUTO_HOME_FAR, true);
 
-        // Log values to Panels and Driver Station
-        panelsTelemetry.debug("Path State", pathState);
-        panelsTelemetry.debug("X", follower.getPose().getX());
-        panelsTelemetry.debug("Y", follower.getPose().getY());
-        panelsTelemetry.debug("Heading", follower.getPose().getHeading());
-        panelsTelemetry.update(telemetry);
-    }
+        drawer.draw();
 
-    public static class Paths {
+        waitForStart();
+        stateMachine.setState(StateMachine.State.AUTO_FAR);
 
-        public PathChain BlueRearLaunchZoneRearShoot;
+        while (opModeIsActive()) {
+            stateMachine.update();
+            follower.update();
+            drawer.draw();
 
-        public Paths(Follower follower) {
-            BlueRearLaunchZoneRearShoot = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(56.500, 8.500), new Pose(56.500, 20.000))
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(90))
-                    .build();
+            panelsTelemetry.debug("State", stateMachine.getState());
+            panelsTelemetry.debug("Pose X", follower.getPose().getX());
+            panelsTelemetry.debug("Pose Y", follower.getPose().getY());
+            panelsTelemetry.debug("Heading", follower.getPose().getHeading());
+
+            panelsTelemetry.update(telemetry);
+
+            telemetry.addData("STATE", stateMachine.getState());
+            telemetry.addData("X POS", follower.getPose().getX());
+            telemetry.addData("Y POS", follower.getPose().getY());
+            telemetry.addData("HEADING", follower.getPose().getHeading());
+            telemetry.update();
         }
-    }
-
-    public int autonomousPathUpdate() {
-        // Add your state machine Here
-        // Access paths with paths.pathName
-        // Refer to the Pedro Pathing Docs (Auto Example) for an example state machine
-        return pathState;
     }
 }
