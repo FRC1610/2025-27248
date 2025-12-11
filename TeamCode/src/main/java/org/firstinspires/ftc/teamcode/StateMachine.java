@@ -7,6 +7,7 @@ import com.pedropathing.paths.PathChain;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.pedroPathing.DecodePaths;
 import org.firstinspires.ftc.teamcode.subsystems.FlywheelController;
+import org.firstinspires.ftc.teamcode.subsystems.FindGoal;
 import org.firstinspires.ftc.teamcode.subsystems.ShootingController;
 import org.firstinspires.ftc.teamcode.subsystems.TurretTracker;
 
@@ -34,6 +35,7 @@ public class StateMachine {
     private final ShootingController shootingController;
     private final FlywheelController flywheelController;
     private final TurretTracker turretTracker;
+    private final FindGoal findGoal;
 
     private int autoNearSubStep = 0;
     private boolean autoNearShootStarted = false;
@@ -51,18 +53,7 @@ public class StateMachine {
         this.shootingController = shootingController;
         this.flywheelController = flywheelController;
         this.turretTracker = turretTracker;
-    }
-
-    public StateMachine(RobotHardware hardware, Follower follower, ShootingController shootingController) {
-        this(hardware, follower, shootingController, null, null);
-    }
-
-    public StateMachine(RobotHardware hardware, Follower follower) {
-        this(hardware, follower, null, null, null);
-    }
-
-    public StateMachine(RobotHardware hardware) {
-        this(hardware, null, null, null, null);
+        this.findGoal = new FindGoal(hardware);
     }
     public void setState(State state, boolean doUpdate) {
         this.currentState = state;
@@ -123,21 +114,35 @@ public class StateMachine {
             case AUTO_NEAR:
                 switch (autoNearSubStep) {
                     case 0:
-                        // Go from near goal to shooting point
+                        if (flywheelController != null) {
+                            if (!flywheelController.isEnabled()) {
+                                flywheelController.toggle();
+                            }
+                            flywheelController.update();
+                        }
+
                         this.follower.followPath(paths.get(AUTO_PATHS.NEAR_PATH_TO_SHOOT_AREA), true);
+
                         autoNearSubStep++;
                         break;
                     case 1:
+                        boolean turretReady = findGoal.updateAndIsDone();
+                        if (turretReady) {
+                            autoNearSubStep++;
+                        }
+                        break;
+                    case 2:
                         // Auto shoot preloaded artifacts
                         if (!this.follower.isBusy()) {
+                            // update the tracker
                             if (turretTracker != null) {
+                                robot.refreshLimelightResult();
                                 turretTracker.update();
                             }
 
+                            // toggle and update flywheel
+                            // problem: the robot limelight result return boolean is false
                             if (flywheelController != null) {
-                                if (!flywheelController.isEnabled()) {
-                                    flywheelController.toggle();
-                                }
                                 flywheelController.update();
                             }
 
@@ -152,36 +157,36 @@ public class StateMachine {
 
                                 boolean finishedShooting = autoNearShootStarted && shootingController.updateAndIsComplete();
                                 if (finishedShooting) {
-                                    autoNearSubStep++;
+                                    //autoNearSubStep++;
                                     autoNearShootStarted = false;
                                 }
                             } else {
-                                autoNearSubStep++;
+                                //autoNearSubStep++;
                             }
                         }
                         break;
-                    case 2:
+                    case 3:
                         if (!this.follower.isBusy()) {
                             this.follower.followPath(paths.get(AUTO_PATHS.NEAR_SHOOT_AREA_TO_CLOSEST_ARTIFACTS), true);
                             //TODO: run intake
                             autoNearSubStep++;
                         }
                         break;
-                    case 3:
+                    case 4:
                         if (!this.follower.isBusy()) {
                             this.follower.followPath(paths.get(AUTO_PATHS.NEAR_PICKUP_CLOSEST_ARTIFACTS), true);
                             //TODO: stop intake after path is finished
                             autoNearSubStep++;
                         }
                         break;
-                    case 4:
+                    case 5:
                         if (!this.follower.isBusy()) {
                             this.follower.followPath(paths.get(AUTO_PATHS.NEAR_PICKUP_TO_SHOOT_AREA), true);
                             //TODO: Shoot sequence here
                             autoNearSubStep++;
                         }
                         break;
-                    case 5:
+                    case 6:
                         if (!this.follower.isBusy()) {
                             this.follower.followPath(paths.get(AUTO_PATHS.NEAR_LEAVE_SHOOT_AREA), true);
                             autoNearSubStep++;

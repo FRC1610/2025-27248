@@ -21,6 +21,7 @@ import org.firstinspires.ftc.teamcode.subsystems.TurretTracker;
 @Autonomous(name = "Auto Proto", group = "Auto Test")
 public class BlueNear extends LinearOpMode {
     RobotHardware hardware = new RobotHardware(this);
+
     private TelemetryManager panelsTelemetry;
     private FieldManager panelsField;
 
@@ -31,16 +32,20 @@ public class BlueNear extends LinearOpMode {
         panelsField.setOffsets(PanelsField.INSTANCE.getPresets().getPEDRO_PATHING());
 
         hardware.init();
+
         FlywheelController flywheelController = new FlywheelController(hardware, telemetry);
         ShootingController shootingController = new ShootingController(hardware, flywheelController, telemetry);
         TurretTracker turretTracker = new TurretTracker(hardware, telemetry);
         Follower follower = Constants.createFollower(hardwareMap);
         StateMachine stateMachine = new StateMachine(hardware, follower, shootingController, flywheelController, turretTracker);
+
         stateMachine.init();
 
         // set our home position
         stateMachine.setState(StateMachine.State.AUTO_HOME_NEAR, true);
         //follower.setStartingPose(DecodePaths.BLUE_NEAR_START);
+
+        drawRobot(panelsField, follower.getPose());
 
         waitForStart();
 
@@ -50,10 +55,6 @@ public class BlueNear extends LinearOpMode {
         while (opModeIsActive()) {
             stateMachine.update();
             follower.update();
-            if (flywheelController.isEnabled()) {
-                turretTracker.update();
-            }
-            flywheelController.update();
 
             drawRobot(panelsField, follower.getPose());
 

@@ -243,6 +243,7 @@ public class RobotHardware {
     }
 
     public LLResult getLatestLimelightResult() {
+        myOpMode.telemetry.addData("RESULT", latestLimelightResult != null && latestLimelightResult.isValid());
         return latestLimelightResult;
     }
 

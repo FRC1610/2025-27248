@@ -93,7 +93,7 @@ public class ShootingController {
                 }
                 break;
             case PRIME_NEXT:
-                if (shootTimer.milliseconds() >= 250) {
+                if (shootTimer.milliseconds() >= 500) {
                     robot.kicker.setPosition(Constants.kickerDown);
                     shootState = ShootState.IDLE;
                 }
