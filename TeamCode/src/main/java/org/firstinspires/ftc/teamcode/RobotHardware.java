@@ -60,6 +60,7 @@ public class RobotHardware {
     public Limelight3A limelight;
     public GoBildaPinpointDriver pinpoint; // Declare OpMode member for the Odometry Computer
     public rgbIndicator rgbIndicatorMain;
+    public rgbIndicator frontLED;
     public rgbIndicator rearRGB1;
     public rgbIndicator rearRGB2;
     public rgbIndicator rearRGB3;
@@ -114,6 +115,9 @@ public class RobotHardware {
 
         rgbIndicatorMain = new rgbIndicator(myOpMode.hardwareMap, "rgbLight");
         rgbIndicatorMain.setColor(LEDColors.YELLOW);
+
+        frontLED = new rgbIndicator(myOpMode.hardwareMap, "frontLED");
+        frontLED.setColor(LEDColors.YELLOW);
 
         rearRGB1 = new rgbIndicator(myOpMode.hardwareMap, "rearRGB1");
         rearRGB2 = new rgbIndicator(myOpMode.hardwareMap, "rearRGB2");
@@ -253,6 +257,7 @@ public class RobotHardware {
     public void configureAllianceFromSwitch() {
         refreshAllianceFromSwitchState();
         rgbIndicatorMain.setColor(allianceColorRed ? LEDColors.RED : LEDColors.BLUE);
+        frontLED.setColor(allianceColorRed ? LEDColors.RED : LEDColors.BLUE);
         rearRGB1.setColor(allianceColorRed ? LEDColors.RED : LEDColors.BLUE);
         rearRGB2.setColor(allianceColorRed ? LEDColors.RED : LEDColors.BLUE);
         rearRGB3.setColor(allianceColorRed ? LEDColors.RED : LEDColors.BLUE);

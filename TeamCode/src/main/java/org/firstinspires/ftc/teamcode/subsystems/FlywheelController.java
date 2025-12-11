@@ -14,6 +14,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.Constants;
 import org.firstinspires.ftc.teamcode.RobotHardware;
+import org.firstinspires.ftc.teamcode.drivers.rgbIndicator.LEDColors;
 
 import java.util.List;
 
@@ -90,12 +91,14 @@ public class FlywheelController {
         robot.refreshLauncherPidfFromConfig();
 
         if (!flywheelEnabled) {
+            setFrontLedColor(LEDColors.OFF);
             publishPanelsFlywheelTelemetry(targetRpm, getCurrentRpm());
             return;
         }
 
         if (robot.launcher == null) {
             telemetry.addLine("ERROR: launcher motor is NULL!");
+            setFrontLedColor(LEDColors.OFF);
             return;
         }
 
@@ -135,6 +138,8 @@ public class FlywheelController {
         rpm = Math.max(rpm, Constants.DEFAULT_RPM);
         setFlywheelRpm(rpm);
 
+        updateFrontLedColor();
+
         publishPanelsFlywheelTelemetry(targetRpm, getCurrentRpm());
 
         if (measuringSpinup && isAtSpeed(Constants.FLYWHEEL_TOLERANCE_RPM)) {
@@ -153,6 +158,7 @@ public class FlywheelController {
             launcherMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
 
+        setFrontLedColor(LEDColors.OFF);
         publishPanelsFlywheelTelemetry(targetRpm, getCurrentRpm());
     }
 
@@ -189,5 +195,41 @@ public class FlywheelController {
         }
 
         panelsTelemetry.debug("Flywheel RPM (target/current)", String.format("%.0f / %.0f", target, current));
+    }
+
+    private void setFrontLedColor(double color) {
+        if (robot.frontLED != null) {
+            robot.frontLED.setColor(color);
+        }
+    }
+
+    private void updateFrontLedColor() {
+        if (robot.frontLED == null) {
+            return;
+        }
+
+        if (!flywheelEnabled) {
+            setFrontLedColor(LEDColors.OFF);
+            return;
+        }
+
+        if (targetRpm == Constants.DEFAULT_RPM) {
+            setFrontLedColor(LEDColors.VIOLET);
+            return;
+        }
+
+        double error = Math.abs(getCurrentRpm() - targetRpm);
+
+        if (error > 250.0) {
+            setFrontLedColor(LEDColors.RED);
+        } else if (error <= 50.0) {
+            setFrontLedColor(LEDColors.GREEN);
+        } else if (error <= 100.0) {
+            setFrontLedColor(LEDColors.YELLOW);
+        } else if (error <= 175.0) {
+            setFrontLedColor(LEDColors.ORANGE);
+        } else {
+            setFrontLedColor(LEDColors.RED);
+        }
     }
 }
