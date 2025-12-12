@@ -15,13 +15,6 @@ public class LauncherMotorGroup {
     private TelemetryManager panels;
     private Telemetry telemetry;
 
-    private final double gearScaledP = FlywheelPidfConfig.launcherP * Constants.LAUNCHER_GEAR_REDUCTION;
-    private final double gearScaledI = FlywheelPidfConfig.launcherI * Constants.LAUNCHER_GEAR_REDUCTION;
-    private final double gearScaledD = FlywheelPidfConfig.launcherD * Constants.LAUNCHER_GEAR_REDUCTION;
-    private final double gearScaledF = FlywheelPidfConfig.launcherF * Constants.LAUNCHER_GEAR_REDUCTION;
-
-    private final PIDFCoefficients pidf = new PIDFCoefficients(gearScaledP, gearScaledI, gearScaledD, gearScaledF);
-
     private double lastLauncherBaseP = Double.NaN;
     private double lastLauncherBaseI = Double.NaN;
     private double lastLauncherBaseD = Double.NaN;
@@ -61,7 +54,7 @@ public class LauncherMotorGroup {
     }
 
     public double getPower() {
-        return launcher1.getPower();
+        return (launcher1.getPower() + launcher2.getPower())/2;
     }
 
     public void setMode(DcMotor.RunMode mode) {
@@ -75,10 +68,17 @@ public class LauncherMotorGroup {
     }
 
     public double getVelocity() {
-        return launcher1.getVelocity();
+        return (launcher1.getVelocity() + launcher2.getVelocity())/2;
     }
 
     public void applyLauncherPidfTuning() {
+        double gearScaledP = FlywheelPidfConfig.launcherP * Constants.LAUNCHER_GEAR_REDUCTION;
+        double gearScaledI = FlywheelPidfConfig.launcherI * Constants.LAUNCHER_GEAR_REDUCTION;
+        double gearScaledD = FlywheelPidfConfig.launcherD * Constants.LAUNCHER_GEAR_REDUCTION;
+        double gearScaledF = FlywheelPidfConfig.launcherF * Constants.LAUNCHER_GEAR_REDUCTION;
+
+        PIDFCoefficients pidf = new PIDFCoefficients(gearScaledP, gearScaledI, gearScaledD, gearScaledF);
+
         launcher1.setVelocityPIDFCoefficients(pidf.p, pidf.i, pidf.d, pidf.f);
         launcher2.setVelocityPIDFCoefficients(pidf.p, pidf.i, pidf.d, pidf.f);
 
