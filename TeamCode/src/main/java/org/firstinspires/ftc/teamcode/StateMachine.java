@@ -25,11 +25,7 @@ public class StateMachine {
 
     public enum AUTO_PATHS {
         NEAR_PATH_TO_SHOOT_AREA,
-        NEAR_SHOOT_AREA_TO_CLOSEST_ARTIFACTS,
-        NEAR_PICKUP_CLOSEST_ARTIFACTS,
-        NEAR_PICKUP_TO_SHOOT_AREA,
-        NEAR_LEAVE_SHOOT_AREA,
-
+        NEAR_SHOOT_AREA_TO_ARTIFACTS,
         FAR_START_TO_SHOOT,
         FAR_SHOOT_TO_ARTIFACTS,
     }
@@ -93,7 +89,7 @@ public class StateMachine {
                 DecodePaths.BLUE_NEAR_START, DecodePaths.BLUE_NEAR_SHOOT,
                 DecodePaths.RED_NEAR_START, DecodePaths.RED_NEAR_SHOOT);
 
-        buildPath(AUTO_PATHS.NEAR_SHOOT_AREA_TO_CLOSEST_ARTIFACTS,
+        buildPath(AUTO_PATHS.NEAR_SHOOT_AREA_TO_ARTIFACTS,
                 DecodePaths.BLUE_NEAR_SHOOT, DecodePaths.BLUE_NEAR_GOTO_ARTIFACTS,
                 DecodePaths.RED_NEAR_SHOOT, DecodePaths.RED_NEAR_GOTO_ARTIFACTS);
 
@@ -213,7 +209,7 @@ public class StateMachine {
                     case 3:
                         if (!follower.isBusy()) {
                             stopFlywheel();
-                            follower.followPath(paths.get(AUTO_PATHS.NEAR_SHOOT_AREA_TO_CLOSEST_ARTIFACTS), true);
+                            follower.followPath(paths.get(AUTO_PATHS.NEAR_SHOOT_AREA_TO_ARTIFACTS), true);
                             autoNearSubStep++;
                         }
                         break;
@@ -240,6 +236,7 @@ public class StateMachine {
                     default:
                         break;
                 }
+                break;
             case AUTO_FAR:
                 switch (autoFarSubStep) {
                     case 0:
