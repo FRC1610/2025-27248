@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.bylazar.configurables.PanelsConfigurables;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.util.RobotLog;
@@ -27,6 +29,7 @@ import java.util.List;
 public class FlywheelController {
 
     private static final double TICKS_PER_REV = 28.0;
+    private static final double MOTOR_TO_FLYWHEEL_RATIO = 24.0 / 16.0;
 
     private static final double MID_ZONE_DISTANCE_FT = 3.5;
     private static final double FAR_ZONE_DISTANCE_FT = 5.5;
@@ -41,6 +44,11 @@ public class FlywheelController {
     private final ElapsedTime spinupTimer = new ElapsedTime();
     private boolean measuringSpinup = false;
     private double spinupSetpointRpm = 0.0;
+
+    private double lastPidfP = Double.NaN;
+    private double lastPidfI = Double.NaN;
+    private double lastPidfD = Double.NaN;
+    private double lastPidfF = Double.NaN;
 
     public FlywheelController(RobotHardware robot,
                               Telemetry telemetry) {
@@ -77,7 +85,8 @@ public class FlywheelController {
             return 0.0;
         }
 
-        return (launcherMotor.getVelocity() * 60.0) / TICKS_PER_REV;
+        double motorRpm = (launcherMotor.getVelocity() * 60.0) / TICKS_PER_REV;
+        return motorRpm * MOTOR_TO_FLYWHEEL_RATIO;
     }
 
     public boolean isAtSpeed(double tolerance) {
@@ -88,7 +97,7 @@ public class FlywheelController {
      * Call every loop to update the RPM based on the detected AprilTag.
      */
     public void update() {
-        robot.refreshLauncherPidfFromConfig();
+        applyPanelsPidfIfChanged();
 
         if (!flywheelEnabled) {
             setFrontLedColor(LEDColors.OFF);
@@ -182,7 +191,7 @@ public class FlywheelController {
             return;
         }
 
-        double ticksPerSecond = rpmToTicksPerSecond(rpm);
+        double ticksPerSecond = rpmToMotorTicksPerSecond(rpm);
         launcherMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launcherMotor.setVelocity(ticksPerSecond);
 
@@ -193,8 +202,9 @@ public class FlywheelController {
         }
     }
 
-    private double rpmToTicksPerSecond(double rpm) {
-        return (rpm * TICKS_PER_REV) / 60.0;
+    private double rpmToMotorTicksPerSecond(double flywheelRpm) {
+        double motorRpm = flywheelRpm / MOTOR_TO_FLYWHEEL_RATIO;
+        return (motorRpm * TICKS_PER_REV) / 60.0;
     }
 
     private void publishPanelsFlywheelTelemetry(double target, double current) {
@@ -207,6 +217,44 @@ public class FlywheelController {
         }
 
         panelsTelemetry.debug("Flywheel RPM (target/current)", String.format("%.0f / %.0f", target, current));
+    }
+
+    /**
+     * Pull the latest PIDF values from Panels and apply them directly (no scaling) to both flywheel motors.
+     */
+    private void applyPanelsPidfIfChanged() {
+        PanelsConfigurables.INSTANCE.refreshClass(FlywheelPidfConfig.class);
+
+        double p = FlywheelPidfConfig.launcherP;
+        double i = FlywheelPidfConfig.launcherI;
+        double d = FlywheelPidfConfig.launcherD;
+        double f = FlywheelPidfConfig.launcherF;
+
+        boolean changed = p != lastPidfP || i != lastPidfI || d != lastPidfD || f != lastPidfF;
+        if (!changed) {
+            return;
+        }
+
+        PIDFCoefficients pidf = new PIDFCoefficients(p, i, d, f);
+
+        if (robot.launcher != null) {
+            robot.launcher.setVelocityPIDFCoefficients(pidf.p, pidf.i, pidf.d, pidf.f);
+        }
+
+        if (robot.launcher2 != null) {
+            robot.launcher2.setVelocityPIDFCoefficients(pidf.p, pidf.i, pidf.d, pidf.f);
+        }
+
+        if (panelsTelemetry != null) {
+            panelsTelemetry.debug(
+                    "Launcher PIDF (P,I,D,F)",
+                    String.format("P=%.3f I=%.3f D=%.3f F=%.3f", pidf.p, pidf.i, pidf.d, pidf.f));
+        }
+
+        lastPidfP = p;
+        lastPidfI = i;
+        lastPidfD = d;
+        lastPidfF = f;
     }
 
     private void setFrontLedColor(double color) {
