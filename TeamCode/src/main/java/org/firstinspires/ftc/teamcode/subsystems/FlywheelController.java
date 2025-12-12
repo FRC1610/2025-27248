@@ -153,6 +153,12 @@ public class FlywheelController {
             launcherMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
 
+        DcMotorEx launcherFollower = robot.launcher2;
+        if (launcherFollower != null) {
+            launcherFollower.setVelocity(0);
+            launcherFollower.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+
         publishPanelsFlywheelTelemetry(targetRpm, getCurrentRpm());
     }
 
@@ -173,6 +179,12 @@ public class FlywheelController {
         double ticksPerSecond = rpmToTicksPerSecond(rpm);
         launcherMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launcherMotor.setVelocity(ticksPerSecond);
+
+        DcMotorEx launcherFollower = robot.launcher2;
+        if (launcherFollower != null) {
+            launcherFollower.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            launcherFollower.setVelocity(ticksPerSecond);
+        }
     }
 
     private double rpmToTicksPerSecond(double rpm) {
