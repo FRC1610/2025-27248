@@ -35,6 +35,7 @@ public class RobotHardware {
     public DcMotor rightBack;
     public DcMotorEx intake;
     public DcMotorEx launcher;
+    public DcMotorEx launcher2;
     public DcMotorEx turret;
     public Servo spindexer;
     public Servo kicker;
@@ -172,6 +173,14 @@ public class RobotHardware {
         launcher.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launcher.setTargetPositionTolerance(25);
+
+        launcher2 = myOpMode.hardwareMap.get(DcMotorEx.class,"launcher2");
+        launcher2.setDirection(DcMotor.Direction.REVERSE);
+        launcher2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        launcher2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        launcher2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        launcher2.setTargetPositionTolerance(25);
+
         applyLauncherPidfTuning();
 
         //TURRET
@@ -306,6 +315,10 @@ public class RobotHardware {
             return;
         }
 
+        if (launcher2 == null) {
+            myOpMode.telemetry.addLine("ERROR: launcher2 motor is NULL!");
+        }
+
         // Scale the motor-side PIDF gains by the gear reduction so the feedforward
         // and proportional response still match the flywheel-side setpoints that are
         // converted into motor ticks/second.
@@ -325,6 +338,14 @@ public class RobotHardware {
                 pidf.i,
                 pidf.d,
                 pidf.f);
+
+        if (launcher2 != null) {
+            launcher2.setVelocityPIDFCoefficients(
+                    pidf.p,
+                    pidf.i,
+                    pidf.d,
+                    pidf.f);
+        }
 
         lastLauncherBaseP = FlywheelPidfConfig.launcherP;
         lastLauncherBaseI = FlywheelPidfConfig.launcherI;
@@ -464,6 +485,9 @@ public class RobotHardware {
 
     public void stopFlywheel() {
         launcher.setVelocity(0);
+        if (launcher2 != null) {
+            launcher2.setVelocity(0);
+        }
         targetRPM = 0;
         flywheelOn = false;
     }
@@ -477,8 +501,14 @@ public class RobotHardware {
         if (flywheelOn) {
             double ticksPerSecond = rpmToTicksPerSecond(rpm);
             launcher.setVelocity(ticksPerSecond);
+            if (launcher2 != null) {
+                launcher2.setVelocity(ticksPerSecond);
+            }
         } else {
             launcher.setVelocity(0);
+            if (launcher2 != null) {
+                launcher2.setVelocity(0);
+            }
         }
     }
 
