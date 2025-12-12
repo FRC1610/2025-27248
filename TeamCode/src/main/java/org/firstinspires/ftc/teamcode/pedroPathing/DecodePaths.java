@@ -6,14 +6,21 @@ public class DecodePaths {
 
 
     ///  BLUE FAR
-    public static final Pose BlueFarStart = new Pose(57, 9, Math.toRadians(270));
-    public static final Pose BlueFarShoot = new Pose(57,21, Math.toRadians(180));
-    public static final Pose BlueFarSpike = new Pose(25,37, Math.toRadians(180));
+    // would be useful if we could start turret sideways to get more time
+    public static final Pose BLUE_FAR_START = new Pose(60, 8.75, Math.toRadians(-90)); // public static final Pose BlueFarStart = new Pose(57, 9, Math.toRadians(270));
+    //public static final Pose BlueFarShoot = new Pose(57,21, Math.toRadians(180));
+    public static final Pose BLUE_FAR_TO_SHOOT_AREA = new Pose(60, 78, Math.toRadians(-90));
+    public static final Pose BLUE_FAR_TO_CLOSEST_ARTIFACT = new Pose(60, 55, Math.toRadians(-90));
+    //public static final Pose BLUE_FAR_GET_ARTIFACTS = new Pose(24, 36, Math.toRadians(-180));
+    //public static final Pose BlueFarSpike = new Pose(25,37, Math.toRadians(180)); // public static final Pose BlueFarSpike = new Pose(25,37, Math.toRadians(180));
 
 
     /// RED FAR
-    public static final Pose RedFarStart = new Pose(88,9, Math.toRadians(270));
-    public static final Pose RedFarShoot = new Pose(88,21, Math.toRadians(0));
+    public static final Pose RED_FAR_START = new Pose(84, 8.75, Math.toRadians(-90)); // public static final Pose BlueFarStart = new Pose(57, 9, Math.toRadians(270)); //public static final Pose RedFarStart = new Pose(88,9, Math.toRadians(270));
+    public static final Pose RED_FAR_TO_SHOOT_AREA = new Pose(84, 78, Math.toRadians(-90));
+    public static final Pose RED_FAR_TO_CLOSEST_ARTIFACT = new Pose(84, 55, Math.toRadians(-90));
+    //public static final Pose RED_FAR_GET_ARTIFACTS = new Pose(120, 36, Math.toRadians(-180));
+    //public static final Pose RedFarShoot = new Pose(88,21, Math.toRadians(0));
 
 
     // NOTE: i changed the values according to how it appeared in the visualizer
@@ -30,5 +37,5 @@ public class DecodePaths {
     public static final Pose RED_NEAR_SHOOT = new Pose(98.5, 98, Math.toRadians(-90)); // public static final Pose BLUE_NEAR_SHOOT = new Pose(96,95, Math.toRadians(90));
     public static final Pose RED_NEAR_GOTO_ARTIFACTS = new Pose(119.9, 98, Math.toRadians(-90));
     public static final Pose RED_NEAR_PICKUP_ARTIFACTS = new Pose(119.9, 91, Math.toRadians(-90));
-    public static final Pose RED_NEAR_LEAVE = new Pose(98.5, 60, Math.toRadians(180));
+    public static final Pose RED_NEAR_LEAVE = new Pose(98.5, 60, Math.toRadians(-180));
 }

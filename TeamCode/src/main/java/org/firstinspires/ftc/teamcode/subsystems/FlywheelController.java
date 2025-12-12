@@ -4,7 +4,6 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.util.RobotLog;
@@ -22,7 +21,7 @@ import java.util.List;
  * Flywheel controller that maps Limelight AprilTag distance to RPM setpoints.
  * The Limelight pipeline is selected in {@link RobotHardware#selectAllianceLimelightPipeline()}
  * so the correct tag is isolated for the current alliance. The launcher motor in
- * {@link RobotHardware#launcher} is used to spin the flywheel.
+ * {@link RobotHardware#launcherGroup} is used to spin the flywheel.
  */
 public class FlywheelController {
 
@@ -71,13 +70,13 @@ public class FlywheelController {
     }
 
     public double getCurrentRpm() {
-        DcMotorEx launcherMotor = robot.launcher;
-        if (launcherMotor == null) {
+        LauncherMotorGroup launcherGroup = robot.launcherGroup;
+        if (launcherGroup == null) {
             telemetry.addLine("ERROR: launcher motor is NULL!");
             return 0.0;
         }
 
-        return (launcherMotor.getVelocity() * 60.0) / TICKS_PER_REV;
+        return (launcherGroup.group.getVelocity() * 60.0) / TICKS_PER_REV;
     }
 
     public boolean isAtSpeed(double tolerance) {
@@ -88,7 +87,7 @@ public class FlywheelController {
      * Call every loop to update the RPM based on the detected AprilTag.
      */
     public void update() {
-        robot.refreshLauncherPidfFromConfig();
+        robot.launcherGroup.refreshLauncherPIDFFromConfig();
 
         if (!flywheelEnabled) {
             setFrontLedColor(LEDColors.OFF);
@@ -96,7 +95,7 @@ public class FlywheelController {
             return;
         }
 
-        if (robot.launcher == null) {
+        if (robot.launcherGroup == null) {
             telemetry.addLine("ERROR: launcher motor is NULL!");
             setFrontLedColor(LEDColors.OFF);
             return;
@@ -152,10 +151,10 @@ public class FlywheelController {
     private void stop() {
         targetRpm = 0.0;
         measuringSpinup = false;
-        DcMotorEx launcherMotor = robot.launcher;
-        if (launcherMotor != null) {
-            launcherMotor.setVelocity(0);
-            launcherMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        LauncherMotorGroup launcherGroup = robot.launcherGroup;
+        if (launcherGroup != null) {
+            launcherGroup.group.setVelocity(0);
+            launcherGroup.group.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
 
         setFrontLedColor(LEDColors.OFF);
@@ -176,13 +175,15 @@ public class FlywheelController {
         }
 
         targetRpm = rpm;
-        DcMotorEx launcherMotor = robot.launcher;
-        if (launcherMotor == null) {
+        LauncherMotorGroup launcherGroup = robot.launcherGroup;
+        if (launcherGroup == null) {
             telemetry.addLine("ERROR: launcher motor is NULL!");
             return;
         }
 
         double ticksPerSecond = rpmToTicksPerSecond(rpm);
+        launcherGroup.group.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        launcherGroup.group.setVelocity(ticksPerSecond);
         launcherMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launcherMotor.setVelocity(ticksPerSecond);
 

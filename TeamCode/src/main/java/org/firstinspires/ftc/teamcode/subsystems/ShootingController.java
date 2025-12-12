@@ -40,8 +40,8 @@ public class ShootingController {
     }
 
     public void startShootSequence() {
-        shootState = ShootState.WAIT_FOR_SPINUP;
         shootTimer.reset();
+        shootState = ShootState.WAIT_FOR_SPINUP;
         shotsRemaining = spindexerPositions.length;
         syncSpindexerIndex();
         robot.kicker.setPosition(Constants.kickerDown);
@@ -61,7 +61,7 @@ public class ShootingController {
 
         switch (shootState) {
             case WAIT_FOR_SPINUP:
-                if (flywheelController.isAtSpeed(Constants.FLYWHEEL_TOLERANCE_RPM) && isAimedAtTarget()) {
+                if (flywheelController.isAtSpeed(Constants.FLYWHEEL_TOLERANCE_RPM) && isAimedAtTarget() && shootTimer.milliseconds() >= 250) {
                     robot.kicker.setPosition(Constants.kickerUp);
                     shootTimer.reset();
                     shootState = ShootState.FIRE;
@@ -89,6 +89,7 @@ public class ShootingController {
                 break;
             case ADVANCE:
                 if (shootTimer.milliseconds() >= 250) {
+                    shootTimer.reset();
                     shootState = ShootState.WAIT_FOR_SPINUP;
                 }
                 break;
