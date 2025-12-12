@@ -22,6 +22,7 @@ import org.firstinspires.ftc.teamcode.subsystems.FlywheelPidfConfig;
 public class FlywheelTest extends LinearOpMode {
 
     private static final double TICKS_PER_REV = 28.0;
+    private static final double MOTOR_TO_FLYWHEEL_RATIO = 24.0 / 16.0;
 
     private static final double RPM_LOW = 2000;
     private static final double RPM_MID = 2200;
@@ -99,7 +100,7 @@ public class FlywheelTest extends LinearOpMode {
             return;
         }
 
-        double ticksPerSecond = rpmToTicksPerSecond(rpmSetpoint);
+        double ticksPerSecond = rpmToMotorTicksPerSecond(rpmSetpoint);
 
         if (robot.launcher != null) {
             robot.launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -134,8 +135,9 @@ public class FlywheelTest extends LinearOpMode {
         }
     }
 
-    private double rpmToTicksPerSecond(double rpm) {
-        return (rpm * TICKS_PER_REV) / 60.0;
+    private double rpmToMotorTicksPerSecond(double flywheelRpm) {
+        double motorRpm = flywheelRpm / MOTOR_TO_FLYWHEEL_RATIO;
+        return (motorRpm * TICKS_PER_REV) / 60.0;
     }
 
     private double getCurrentRpm() {
@@ -144,7 +146,8 @@ public class FlywheelTest extends LinearOpMode {
             return 0.0;
         }
 
-        return (launcherMotor.getVelocity() * 60.0) / TICKS_PER_REV;
+        double motorRpm = (launcherMotor.getVelocity() * 60.0) / TICKS_PER_REV;
+        return motorRpm * MOTOR_TO_FLYWHEEL_RATIO;
     }
 
     /**
