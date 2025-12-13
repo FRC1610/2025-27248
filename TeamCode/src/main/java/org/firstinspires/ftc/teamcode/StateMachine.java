@@ -22,6 +22,8 @@ public class StateMachine {
         AUTO_NEAR,
         AUTO_HOME_FAR,
         AUTO_FAR,
+        AUTO_LEAVE_NEAR,
+        AUTO_LEAVE_FAR,
     }
 
     public enum AUTO_PATHS {
@@ -31,7 +33,9 @@ public class StateMachine {
         NEAR_PICKUP_SPIKE1,
         FAR_START_TO_SHOOT,
         FAR_SHOOT_TO_SPIKE3,
-        FAR_SHOOT_ROTATE_TO_SPIKE3
+        FAR_SHOOT_ROTATE_TO_SPIKE3,
+        NEAR_START_TO_LEAVE,
+        FAR_START_TO_LEAVE,
     }
 
     private State currentState;
