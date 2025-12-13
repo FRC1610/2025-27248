@@ -16,7 +16,7 @@ public class Constants {
     public static final double LAUNCH_ZONE_MID_RPM = 2000.0; // ~3.5 ft
     public static final double LAUNCH_ZONE_FAR_RPM = 2200.0; // ~5.5 ft
     public static final double LAUNCH_ZONE_FAR_FAR_RPM = 2600.0; // >8 ft
-    public static final double FLYWHEEL_TOLERANCE_RPM = 85.0;
+    public static final double FLYWHEEL_TOLERANCE_RPM = 100.0;
     public static final double LAUNCHER_GEAR_REDUCTION = 16.0 / 24.0; // motor:flywheel = 2:3
 
     /// LAUNCHER PIDF (base gains in motor units)
@@ -25,7 +25,7 @@ public class Constants {
     // Bump the base gains to improve spin-up authority after gear scaling and
     // compensate for wheel inertia; tune at the motor side, then scale by the
     // reduction before applying to the flywheel velocity loop.
-    public static final double LAUNCHER_F = 42;    // Stronger feedforward to reach setpoint
+    public static final double LAUNCHER_F = 41.75;    // Stronger feedforward to reach setpoint
     public static final double LAUNCHER_P = 12;    // Tighter proportional correction // original 12
     public static final double LAUNCHER_I = 0.0;    // Small I to clean steady-state error //original 0.05
     public static final double LAUNCHER_D = 0.0;     // Slightly more damping for step changes  //original 0.6

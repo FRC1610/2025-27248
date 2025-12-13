@@ -36,6 +36,7 @@ public class FlywheelController {
     private TelemetryManager panelsTelemetry;
     private boolean flywheelEnabled = false;
     private double targetRpm = 0.0;
+    private double rpmTolerance = Constants.FLYWHEEL_TOLERANCE_RPM;
 
     private final ElapsedTime spinupTimer = new ElapsedTime();
     private boolean measuringSpinup = false;
@@ -46,6 +47,8 @@ public class FlywheelController {
         this.robot = robot;
         this.telemetry = telemetry;
         this.panelsTelemetry = robot.getPanelsTelemetry();
+
+        resetDriverTuningFromConstants();
     }
 
      /**
@@ -79,8 +82,32 @@ public class FlywheelController {
         return (launcherGroup.group.getVelocity() * 60.0) / TICKS_PER_REV;
     }
 
-    public boolean isAtSpeed(double tolerance) {
-        return Math.abs(getCurrentRpm() - targetRpm) <= tolerance;
+    public boolean isAtSpeed() {
+        return (getCurrentRpm() >= (targetRpm - rpmTolerance)) && ( getCurrentRpm() < (targetRpm + 750) );
+        //return Math.abs(getCurrentRpm() - targetRpm) <= rpmTolerance;
+    }
+
+    public double getRpmTolerance() {
+        return rpmTolerance;
+    }
+
+    public void adjustRpmTolerance(double delta) {
+        rpmTolerance = Math.max(0.0, rpmTolerance + delta);
+    }
+
+    public void adjustLauncherFeedforward(double delta) {
+        FlywheelPidfConfig.launcherF += delta;
+    }
+
+    /**
+     * Restore driver-tunable values to their default Constants-based settings.
+     */
+    public void resetDriverTuningFromConstants() {
+        rpmTolerance = Constants.FLYWHEEL_TOLERANCE_RPM;
+        FlywheelPidfConfig.launcherP = Constants.LAUNCHER_P;
+        FlywheelPidfConfig.launcherI = Constants.LAUNCHER_I;
+        FlywheelPidfConfig.launcherD = Constants.LAUNCHER_D;
+        FlywheelPidfConfig.launcherF = Constants.LAUNCHER_F;
     }
 
     /**
@@ -141,7 +168,7 @@ public class FlywheelController {
 
         publishPanelsFlywheelTelemetry(targetRpm, getCurrentRpm());
 
-        if (measuringSpinup && isAtSpeed(Constants.FLYWHEEL_TOLERANCE_RPM)) {
+        if (measuringSpinup && isAtSpeed()) {
             double elapsedSeconds = spinupTimer.seconds();
             RobotLog.ii("FlywheelController", "Spin-up to %.0f RPM reached in %.2f s", spinupSetpointRpm, elapsedSeconds);
             measuringSpinup = false;
@@ -218,16 +245,38 @@ public class FlywheelController {
 
         double error = Math.abs(getCurrentRpm() - targetRpm);
 
-        if (error > 250.0) {
+        // get minimum target rpm
+        // red anything not specified
+        // orange within half threshold
+        // yellow within 1/4 threshold
+        // green within threshold
+
+        double currentRpm = Math.abs(getCurrentRpm());
+        double minimumRpm = targetRpm - rpmTolerance;
+        double maxRpm = targetRpm + 750;
+
+        if (currentRpm >= maxRpm) {
             setFrontLedColor(LEDColors.RED);
-        } else if (error <= 50.0) {
+        } else if (currentRpm >= minimumRpm) {
             setFrontLedColor(LEDColors.GREEN);
-        } else if (error <= 100.0) {
+        } else if (currentRpm <= minimumRpm - (minimumRpm/2)) {
             setFrontLedColor(LEDColors.YELLOW);
-        } else if (error <= 175.0) {
+        } else if (currentRpm <= minimumRpm - (minimumRpm/4)) {
             setFrontLedColor(LEDColors.ORANGE);
         } else {
             setFrontLedColor(LEDColors.RED);
         }
+
+//        if (error > 250.0) {
+//            setFrontLedColor(LEDColors.RED);
+//        } else if (error <= 50.0) {
+//            setFrontLedColor(LEDColors.GREEN);
+//        } else if (error <= 100.0) {
+//            setFrontLedColor(LEDColors.YELLOW);
+//        } else if (error <= 175.0) {
+//            setFrontLedColor(LEDColors.ORANGE);
+//        } else {
+//            setFrontLedColor(LEDColors.RED);
+//        }
     }
 }

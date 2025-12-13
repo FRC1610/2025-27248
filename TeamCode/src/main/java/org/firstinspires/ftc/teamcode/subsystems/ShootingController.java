@@ -61,7 +61,7 @@ public class ShootingController {
 
         switch (shootState) {
             case WAIT_FOR_SPINUP:
-                if (flywheelController.isAtSpeed(Constants.FLYWHEEL_TOLERANCE_RPM) && isAimedAtTarget() && shootTimer.milliseconds() >= 250) {
+                if (flywheelController.isAtSpeed() && isAimedAtTarget() && shootTimer.milliseconds() >= 250) {
                     robot.kicker.setPosition(Constants.kickerUp);
                     shootTimer.reset();
                     shootState = ShootState.FIRE;

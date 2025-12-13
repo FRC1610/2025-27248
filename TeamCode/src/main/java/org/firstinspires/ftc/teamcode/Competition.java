@@ -11,6 +11,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import org.firstinspires.ftc.teamcode.subsystems.ArtifactTracker;
 import org.firstinspires.ftc.teamcode.subsystems.FlywheelController;
+import org.firstinspires.ftc.teamcode.subsystems.FlywheelPidfConfig;
 import org.firstinspires.ftc.teamcode.subsystems.ShootingController;
 import org.firstinspires.ftc.teamcode.subsystems.TurretTracker;
 //import org.firstinspires.ftc.teamcode.drivers.GoBildaPinpointDriver;
@@ -28,6 +29,11 @@ public class Competition extends LinearOpMode {
     private FlywheelController flywheelController;
     private ShootingController shootingController;
     private ArtifactTracker artifactTracker;
+
+    private boolean dpadUpPreviouslyPressed = false;
+    private boolean dpadDownPreviouslyPressed = false;
+    private boolean dpadLeftPreviouslyPressed = false;
+    private boolean dpadRightPreviouslyPressed = false;
 
     private final double[] spindexerPositions = new double[]{Constants.spindexer1, Constants.spindexer2, Constants.spindexer3};
     private int spindexerIndex = 0;
@@ -133,7 +139,32 @@ public class Competition extends LinearOpMode {
                 flywheelController.toggle();
             }
             backButtonPreviouslyPressed = backButtonPressed;
-            flywheelController.update();
+
+            boolean dpadUp = gamepad1.dpad_up;
+            boolean dpadDown = gamepad1.dpad_down;
+            boolean dpadLeft = gamepad1.dpad_left;
+            boolean dpadRight = gamepad1.dpad_right;
+
+            if (dpadUp && !dpadUpPreviouslyPressed) {
+                flywheelController.adjustRpmTolerance(10.0);
+            }
+
+            if (dpadDown && !dpadDownPreviouslyPressed) {
+                flywheelController.adjustRpmTolerance(-10.0);
+            }
+
+            if (dpadRight && !dpadRightPreviouslyPressed) {
+                flywheelController.adjustLauncherFeedforward(1.0);
+            }
+
+            if (dpadLeft && !dpadLeftPreviouslyPressed) {
+                flywheelController.adjustLauncherFeedforward(-1.0);
+            }
+
+            dpadUpPreviouslyPressed = dpadUp;
+            dpadDownPreviouslyPressed = dpadDown;
+            dpadLeftPreviouslyPressed = dpadLeft;
+            dpadRightPreviouslyPressed = dpadRight;
 
             boolean rightBumperPressed = gamepad2.a;
             if (rightBumperPressed && !rightBumperPreviouslyPressed && shootingController.isIdle()
@@ -142,6 +173,7 @@ public class Competition extends LinearOpMode {
             }
             rightBumperPreviouslyPressed = rightBumperPressed;
 
+            flywheelController.update();
             shootingController.update();
 
             ///INTAKE
@@ -200,9 +232,11 @@ public class Competition extends LinearOpMode {
                 }
             }
 
-            telemetry.addData("Turret", "enabled=%b  targetPos=%d  currentPos=%d", flywheelController.isEnabled(), robot.getTurretTarget(), robot.getTurretPosition());
-            telemetry.addData("Shooter", shootingController.getShootState());
-            telemetry.addData("Spindexer", "pos=%.2f", robot.spindexerPos);
+//            telemetry.addData("Turret", "enabled=%b  targetPos=%d  currentPos=%d", flywheelController.isEnabled(), robot.getTurretTarget(), robot.getTurretPosition());
+//            telemetry.addData("Shooter", shootingController.getShootState());
+//            telemetry.addData("Spindexer", "pos=%.2f", robot.spindexerPos);
+            telemetry.addData("Flywheel Tolerance", "%.0f rpm", flywheelController.getRpmTolerance());
+            telemetry.addData("Launcher F", "%.0f", FlywheelPidfConfig.launcherF);
             robot.flushPanelsTelemetry(telemetry);
             telemetry.update();
         }
