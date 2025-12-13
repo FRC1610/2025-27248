@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
+import com.pedropathing.util.Timer;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.pedroPathing.DecodePaths;
@@ -25,9 +26,12 @@ public class StateMachine {
 
     public enum AUTO_PATHS {
         NEAR_PATH_TO_SHOOT_AREA,
-        NEAR_SHOOT_AREA_TO_ARTIFACTS,
+        NEAR_SHOOT_AREA_TO_SPIKE1,
+        NEAR_GOTO_SHOOT_SPIKE1,
+        NEAR_PICKUP_SPIKE1,
         FAR_START_TO_SHOOT,
-        FAR_SHOOT_TO_ARTIFACTS,
+        FAR_SHOOT_TO_SPIKE3,
+        FAR_SHOOT_ROTATE_TO_SPIKE3
     }
 
     private State currentState;
@@ -38,10 +42,10 @@ public class StateMachine {
     private final TurretTracker turretTracker;
     private final FindGoal findGoal;
 
+    private Timer pathTimer = new Timer();
     private int autoNearSubStep = 0;
     private int autoFarSubStep = 0;
     private boolean shootStarted = false;
-    private boolean trackerEnabled = false;
 
     private final double[] spindexerPositions = new double[]{org.firstinspires.ftc.teamcode.Constants.spindexer1, org.firstinspires.ftc.teamcode.Constants.spindexer2, org.firstinspires.ftc.teamcode.Constants.spindexer3};
     private int spindexerIndex = 0;
@@ -62,6 +66,8 @@ public class StateMachine {
         currentState = state;
 
         // reset blah blah
+
+        pathTimer.resetTimer();
 
         autoNearSubStep = 0;
         autoFarSubStep = 0;
@@ -89,17 +95,17 @@ public class StateMachine {
                 DecodePaths.BLUE_NEAR_START, DecodePaths.BLUE_NEAR_SHOOT,
                 DecodePaths.RED_NEAR_START, DecodePaths.RED_NEAR_SHOOT);
 
-        buildPath(AUTO_PATHS.NEAR_SHOOT_AREA_TO_ARTIFACTS,
+        buildPath(AUTO_PATHS.NEAR_SHOOT_AREA_TO_SPIKE1,
                 DecodePaths.BLUE_NEAR_SHOOT, DecodePaths.BLUE_NEAR_GOTO_ARTIFACTS,
                 DecodePaths.RED_NEAR_SHOOT, DecodePaths.RED_NEAR_GOTO_ARTIFACTS);
 
-//        buildPath(AUTO_PATHS.NEAR_PICKUP_CLOSEST_ARTIFACTS,
-//                DecodePaths.BLUE_NEAR_GOTO_ARTIFACTS, DecodePaths.BLUE_NEAR_PICKUP_ARTIFACTS,
-//                DecodePaths.RED_NEAR_GOTO_ARTIFACTS, DecodePaths.RED_NEAR_PICKUP_ARTIFACTS);
+        buildPath(AUTO_PATHS.NEAR_PICKUP_SPIKE1,
+                DecodePaths.BLUE_NEAR_GOTO_ARTIFACTS, DecodePaths.BLUE_NEAR_PICKUP_ARTIFACTS,
+                DecodePaths.RED_NEAR_GOTO_ARTIFACTS, DecodePaths.RED_NEAR_PICKUP_ARTIFACTS);
 
-//        buildPath(AUTO_PATHS.NEAR_PICKUP_TO_SHOOT_AREA,
-//                DecodePaths.BLUE_NEAR_PICKUP_ARTIFACTS, DecodePaths.BLUE_NEAR_SHOOT,
-//                DecodePaths.RED_NEAR_PICKUP_ARTIFACTS, DecodePaths.RED_NEAR_SHOOT);
+        buildPath(AUTO_PATHS.NEAR_GOTO_SHOOT_SPIKE1,
+                DecodePaths.BLUE_NEAR_PICKUP_ARTIFACTS, DecodePaths.BLUE_NEAR_GO_INSIDE_ZONE,
+                DecodePaths.RED_NEAR_PICKUP_ARTIFACTS, DecodePaths.RED_NEAR_GO_INSIDE_ZONE);
 //
 //        buildPath(AUTO_PATHS.NEAR_LEAVE_SHOOT_AREA,
 //                DecodePaths.BLUE_NEAR_SHOOT, DecodePaths.BLUE_NEAR_LEAVE,
@@ -110,9 +116,13 @@ public class StateMachine {
                 DecodePaths.BLUE_FAR_START, DecodePaths.BLUE_FAR_TO_SHOOT_AREA,
                 DecodePaths.RED_FAR_START, DecodePaths.RED_FAR_TO_SHOOT_AREA);
 
-        buildPath(AUTO_PATHS.FAR_SHOOT_TO_ARTIFACTS,
-                DecodePaths.BLUE_FAR_TO_SHOOT_AREA, DecodePaths.BLUE_FAR_TO_CLOSEST_ARTIFACT,
-                DecodePaths.RED_FAR_TO_SHOOT_AREA, DecodePaths.RED_FAR_TO_CLOSEST_ARTIFACT);
+        buildPath(AUTO_PATHS.FAR_SHOOT_TO_SPIKE3,
+                DecodePaths.BLUE_FAR_TO_SHOOT_AREA, DecodePaths.BLUE_FAR_TO_SPIKE3,
+                DecodePaths.RED_FAR_TO_SHOOT_AREA, DecodePaths.RED_FAR_TO_SPIKE3);
+
+//        buildPath(AUTO_PATHS.FAR_SHOOT_ROTATE_TO_SPIKE3,
+//                DecodePaths.BLUE_FAR_TO_SPIKE3, DecodePaths.BLUE_FAR_ROTATE_TO_SPIKE3,
+//                DecodePaths.RED_FAR_TO_SPIKE3, DecodePaths.RED_FAR_ROTATE_TO_SPIKE3);
 
 //        buildPath(AUTO_PATHS.FAR_LEAVE_TO_PICKUP,
 //                DecodePaths.BLUE_FAR_LEAVE, DecodePaths.BLUE_FAR_GET_ARTIFACTS,
@@ -168,6 +178,12 @@ public class StateMachine {
         }
     }
 
+    private void setSpindexPosition(int position) {
+        spindexerIndex = position;
+        robot.spindexer.setPosition(spindexerPositions[spindexerIndex]);
+        robot.spindexerPos = spindexerPositions[spindexerIndex];
+    }
+
     public void update() {
         switch (currentState) {
             case HOME:
@@ -209,29 +225,42 @@ public class StateMachine {
                     case 3:
                         if (!follower.isBusy()) {
                             stopFlywheel();
-                            follower.followPath(paths.get(AUTO_PATHS.NEAR_SHOOT_AREA_TO_ARTIFACTS), true);
+                            follower.followPath(paths.get(AUTO_PATHS.NEAR_SHOOT_AREA_TO_SPIKE1), true);
+                            setSpindexPosition(0);
+                            pathTimer.resetTimer();
                             autoNearSubStep++;
                         }
                         break;
                     case 4:
-//                        if (!follower.isBusy()) {
-//                            follower.followPath(paths.get(AUTO_PATHS.NEAR_PICKUP_CLOSEST_ARTIFACTS), true);
-//                            //TODO: stop intake after path is finished
-//                            autoNearSubStep++;
-//                        }
+                        if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() >= 1.0) {
+                            robot.runIntake(RobotHardware.IntakeDirection.IN);
+                            follower.followPath(paths.get(AUTO_PATHS.NEAR_PICKUP_SPIKE1), true);
+                            runFlywheel();
+                            pathTimer.resetTimer();
+                            autoNearSubStep++;
+                        }
                         break;
                     case 5:
-//                        if (!follower.isBusy()) {
-//                            follower.followPath(paths.get(AUTO_PATHS.NEAR_PICKUP_TO_SHOOT_AREA), true);
-//                            //TODO: Shoot sequence here
-//                            autoNearSubStep++;
-//                        }
+                        if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() >= 1) {
+                            follower.followPath(paths.get(AUTO_PATHS.NEAR_GOTO_SHOOT_SPIKE1), true);
+                            pathTimer.resetTimer();
+                            autoNearSubStep++;
+                        }
                         break;
                     case 6:
-//                        if (!follower.isBusy()) {
-//                            this.follower.followPath(paths.get(AUTO_PATHS.NEAR_LEAVE_SHOOT_AREA), true);
-//                            autoNearSubStep++;
-//                        }
+                        if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() >= 1.5) {
+                            robot.runIntake(RobotHardware.IntakeDirection.STOP);
+                            autoNearSubStep++;
+                        }
+                        break;
+                    case 7:
+                        if (!follower.isBusy()) {
+                            boolean shot = shoot();
+                            if (shot) {
+                                stopFlywheel();
+                                autoNearSubStep++;
+                            }
+                        }
                         break;
                     default:
                         break;
@@ -254,39 +283,7 @@ public class StateMachine {
                         if (!follower.isBusy()) {
                             boolean shot = shoot();
                             if (shot) {
-                                follower.followPath(paths.get(AUTO_PATHS.FAR_SHOOT_TO_ARTIFACTS));
-                                stopFlywheel();
-                                robot.turret.setTargetPosition(0);
-                                autoFarSubStep++;
-                            }
-                        }
-                        break;
-                    case 3:
-                        if (!follower.isBusy()) {
-                            //follower.followPath(paths.get(AUTO_PATHS.FAR_LEAVE_TO_PICKUP), true);
-                            //TODO: run intake at a certain point
-                            //TODO: stop after pickup is complete
-                            //autoFarSubStep++;
-                        }
-                        break;
-                    case 4:
-                        if (!follower.isBusy()) {
-                            runFlywheel();
-                            //follower.followPath(paths.get(AUTO_PATHS.FAR_PICKUP_TO_START), true);
-                            autoFarSubStep++;
-                        }
-                        break;
-                    case 5:
-                        boolean turretReady2 = findGoal.updateAndIsDone();
-                        if (turretReady2) {
-                            autoFarSubStep++;
-                        }
-                        break;
-                    case 6:
-                        if (!follower.isBusy()) {
-                            boolean shot2 = shoot();
-                            if (shot2) {
-                                //follower.followPath(paths.get(AUTO_PATHS.FAR_START_TO_LEAVE), true);
+                                follower.followPath(paths.get(AUTO_PATHS.FAR_SHOOT_TO_SPIKE3), true);
                                 stopFlywheel();
                                 autoFarSubStep++;
                             }
