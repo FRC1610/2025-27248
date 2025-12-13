@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.bylazar.configurables.annotations.Configurable;
 import org.firstinspires.ftc.teamcode.Constants;
+import org.firstinspires.ftc.teamcode.RobotHardware;
 
 /**
  * Panels-configurable PIDF constants for the launcher flywheel.
@@ -14,7 +15,8 @@ public class FlywheelPidfConfig {
     public static double launcherD = Constants.LAUNCHER_D;
     public static double launcherF = Constants.LAUNCHER_F;
 
-    private FlywheelPidfConfig() {
+    private FlywheelPidfConfig(RobotHardware robot) { // add robot to class
+        launcherF = robot.TELEOP_LAUNCHER_F;
         // Utility holder; no instances required.
     }
 }

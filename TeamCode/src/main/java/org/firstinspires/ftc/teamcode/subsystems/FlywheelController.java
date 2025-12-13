@@ -141,7 +141,7 @@ public class FlywheelController {
 
         publishPanelsFlywheelTelemetry(targetRpm, getCurrentRpm());
 
-        if (measuringSpinup && isAtSpeed(Constants.FLYWHEEL_TOLERANCE_RPM)) {
+        if (measuringSpinup && isAtSpeed(robot.TELEOP_FLYWHEEL_TOLERANCE_RPM)) {
             double elapsedSeconds = spinupTimer.seconds();
             RobotLog.ii("FlywheelController", "Spin-up to %.0f RPM reached in %.2f s", spinupSetpointRpm, elapsedSeconds);
             measuringSpinup = false;

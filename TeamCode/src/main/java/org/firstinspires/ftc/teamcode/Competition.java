@@ -157,6 +157,22 @@ public class Competition extends LinearOpMode {
                 robot.runIntake(RobotHardware.IntakeDirection.STOP);
             }
 
+            if (gamepad1.dpadLeftWasPressed()) {
+                robot.TELEOP_LAUNCHER_F -= 1.0;
+            }
+
+            if (gamepad1.dpadRightWasPressed()) {
+                robot.TELEOP_LAUNCHER_F += 1.0;
+            }
+
+            if (gamepad1.dpadUpWasPressed()) {
+                robot.TELEOP_FLYWHEEL_TOLERANCE_RPM += 10.0;
+            }
+
+            if (gamepad1.dpadDownWasPressed()) {
+                robot.TELEOP_FLYWHEEL_TOLERANCE_RPM -= 10.0;
+            }
+
             /*
             // ----- Spindexer test control -----
 
@@ -179,30 +195,31 @@ public class Competition extends LinearOpMode {
 
              */
 
-            if (shootingController.isIdle()) {
-                //Manual Lift Control
-                if (gamepad1.a) {
-                    robot.kicker.setPosition(Constants.kickerUp);
-                } else {
-                    robot.kicker.setPosition(Constants.kickerDown);
-                }
+                if (shootingController.isIdle()) {
+                    //Manual Lift Control
+                    if (gamepad1.a) {
+                        robot.kicker.setPosition(Constants.kickerUp);
+                    } else {
+                        robot.kicker.setPosition(Constants.kickerDown);
+                    }
 
-                //Spindexer Manual Control
-                if (gamepad2.b) {
-                    robot.spindexer.setPosition(Constants.spindexer1);
-                    robot.spindexerPos = Constants.spindexer1;
-                } else if (gamepad2.y) {
-                    robot.spindexer.setPosition(Constants.spindexer2);
-                    robot.spindexerPos = Constants.spindexer2;
-                } else if (gamepad2.x) {
-                    robot.spindexer.setPosition(Constants.spindexer3);
-                    robot.spindexerPos = Constants.spindexer3;
+                    //Spindexer Manual Control
+                    if (gamepad2.b) {
+                        robot.spindexer.setPosition(Constants.spindexer1);
+                        robot.spindexerPos = Constants.spindexer1;
+                    } else if (gamepad2.y) {
+                        robot.spindexer.setPosition(Constants.spindexer2);
+                        robot.spindexerPos = Constants.spindexer2;
+                    } else if (gamepad2.x) {
+                        robot.spindexer.setPosition(Constants.spindexer3);
+                        robot.spindexerPos = Constants.spindexer3;
+                    }
                 }
-            }
-
             telemetry.addData("Turret", "enabled=%b  targetPos=%d  currentPos=%d", flywheelController.isEnabled(), robot.getTurretTarget(), robot.getTurretPosition());
             telemetry.addData("Shooter", shootingController.getShootState());
             telemetry.addData("Spindexer", "pos=%.2f", robot.spindexerPos);
+            telemetry.addData("TeleOp Tolerance", robot.TELEOP_FLYWHEEL_TOLERANCE_RPM);
+            telemetry.addData("TeleOp Feed", robot.TELEOP_LAUNCHER_F);
             robot.flushPanelsTelemetry(telemetry);
             telemetry.update();
         }

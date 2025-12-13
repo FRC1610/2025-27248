@@ -86,6 +86,9 @@ public class RobotHardware {
         return panelsTelemetry;
     }
 
+    public double TELEOP_FLYWHEEL_TOLERANCE_RPM = Constants.FLYWHEEL_TOLERANCE_RPM;
+    public double TELEOP_LAUNCHER_F = Constants.LAUNCHER_F;
+
     /**
      * Flush any queued Panels telemetry entries. Call this once per loop after all subsystems
      * have contributed their debug values so the dashboard renders a single coherent packet.
