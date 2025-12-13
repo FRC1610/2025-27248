@@ -83,7 +83,8 @@ public class FlywheelController {
     }
 
     public boolean isAtSpeed() {
-        return Math.abs(getCurrentRpm() - targetRpm) <= rpmTolerance;
+        return (getCurrentRpm() >= (targetRpm - rpmTolerance)) && ( getCurrentRpm() < (targetRpm + 750) );
+        //return Math.abs(getCurrentRpm() - targetRpm) <= rpmTolerance;
     }
 
     public double getRpmTolerance() {
@@ -244,16 +245,38 @@ public class FlywheelController {
 
         double error = Math.abs(getCurrentRpm() - targetRpm);
 
-        if (error > 250.0) {
+        // get minimum target rpm
+        // red anything not specified
+        // orange within half threshold
+        // yellow within 1/4 threshold
+        // green within threshold
+
+        double currentRpm = Math.abs(getCurrentRpm());
+        double minimumRpm = targetRpm - rpmTolerance;
+        double maxRpm = targetRpm + 750;
+
+        if (currentRpm >= maxRpm) {
             setFrontLedColor(LEDColors.RED);
-        } else if (error <= 50.0) {
+        } else if (currentRpm >= minimumRpm) {
             setFrontLedColor(LEDColors.GREEN);
-        } else if (error <= 100.0) {
+        } else if (currentRpm <= minimumRpm - (minimumRpm/2)) {
             setFrontLedColor(LEDColors.YELLOW);
-        } else if (error <= 175.0) {
+        } else if (currentRpm <= minimumRpm - (minimumRpm/4)) {
             setFrontLedColor(LEDColors.ORANGE);
         } else {
             setFrontLedColor(LEDColors.RED);
         }
+
+//        if (error > 250.0) {
+//            setFrontLedColor(LEDColors.RED);
+//        } else if (error <= 50.0) {
+//            setFrontLedColor(LEDColors.GREEN);
+//        } else if (error <= 100.0) {
+//            setFrontLedColor(LEDColors.YELLOW);
+//        } else if (error <= 175.0) {
+//            setFrontLedColor(LEDColors.ORANGE);
+//        } else {
+//            setFrontLedColor(LEDColors.RED);
+//        }
     }
 }

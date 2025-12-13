@@ -133,39 +133,6 @@ public class Competition extends LinearOpMode {
                 robot.headlight.setPosition(0.0);
             }
 
-            boolean dpadUp = gamepad1.dpad_up;
-            boolean dpadDown = gamepad1.dpad_down;
-            boolean dpadLeft = gamepad1.dpad_left;
-            boolean dpadRight = gamepad1.dpad_right;
-
-            boolean toleranceAdjusted = false;
-            boolean feedforwardAdjusted = false;
-
-            if (dpadUp && !dpadUpPreviouslyPressed) {
-                flywheelController.adjustRpmTolerance(10.0);
-                toleranceAdjusted = true;
-            }
-
-            if (dpadDown && !dpadDownPreviouslyPressed) {
-                flywheelController.adjustRpmTolerance(-10.0);
-                toleranceAdjusted = true;
-            }
-
-            if (dpadRight && !dpadRightPreviouslyPressed) {
-                flywheelController.adjustLauncherFeedforward(1.0);
-                feedforwardAdjusted = true;
-            }
-
-            if (dpadLeft && !dpadLeftPreviouslyPressed) {
-                flywheelController.adjustLauncherFeedforward(-1.0);
-                feedforwardAdjusted = true;
-            }
-
-            dpadUpPreviouslyPressed = dpadUp;
-            dpadDownPreviouslyPressed = dpadDown;
-            dpadLeftPreviouslyPressed = dpadLeft;
-            dpadRightPreviouslyPressed = dpadRight;
-
             // Flywheel toggle on gamepad2 back
             boolean backButtonPressed = gamepad2.back;
             if (backButtonPressed && !backButtonPreviouslyPressed) {
@@ -173,15 +140,35 @@ public class Competition extends LinearOpMode {
             }
             backButtonPreviouslyPressed = backButtonPressed;
 
-            // Apply controller updates after any driver tuning tweaks so telemetry reflects changes immediately.
-            flywheelController.update();
+            boolean dpadUp = gamepad1.dpad_up;
+            boolean dpadDown = gamepad1.dpad_down;
+            boolean dpadLeft = gamepad1.dpad_left;
+            boolean dpadRight = gamepad1.dpad_right;
 
-            if (toleranceAdjusted) {
-                telemetry.addData("Flywheel tolerance adjusted", "%.0f rpm", flywheelController.getRpmTolerance());
+            if (dpadUp && !dpadUpPreviouslyPressed) {
+                telemetry.addLine("do something before i hurt this robot");
+                flywheelController.adjustRpmTolerance(10.0);
             }
-            if (feedforwardAdjusted) {
-                telemetry.addData("Launcher F adjusted", "%.0f", FlywheelPidfConfig.launcherF);
+
+            if (dpadDown && !dpadDownPreviouslyPressed) {
+                telemetry.addLine("do something before i hurt this robot 2");
+                flywheelController.adjustRpmTolerance(-10.0);
             }
+
+            if (dpadRight && !dpadRightPreviouslyPressed) {
+                telemetry.addLine("do something before i hurt this robot 3");
+                flywheelController.adjustLauncherFeedforward(1.0);
+            }
+
+            if (dpadLeft && !dpadLeftPreviouslyPressed) {
+                telemetry.addLine("do something before i hurt this robot 4");
+                flywheelController.adjustLauncherFeedforward(-1.0);
+            }
+
+            dpadUpPreviouslyPressed = dpadUp;
+            dpadDownPreviouslyPressed = dpadDown;
+            dpadLeftPreviouslyPressed = dpadLeft;
+            dpadRightPreviouslyPressed = dpadRight;
 
             boolean rightBumperPressed = gamepad2.a;
             if (rightBumperPressed && !rightBumperPreviouslyPressed && shootingController.isIdle()
@@ -190,6 +177,7 @@ public class Competition extends LinearOpMode {
             }
             rightBumperPreviouslyPressed = rightBumperPressed;
 
+            flywheelController.update();
             shootingController.update();
 
             ///INTAKE
@@ -248,9 +236,9 @@ public class Competition extends LinearOpMode {
                 }
             }
 
-            telemetry.addData("Turret", "enabled=%b  targetPos=%d  currentPos=%d", flywheelController.isEnabled(), robot.getTurretTarget(), robot.getTurretPosition());
-            telemetry.addData("Shooter", shootingController.getShootState());
-            telemetry.addData("Spindexer", "pos=%.2f", robot.spindexerPos);
+//            telemetry.addData("Turret", "enabled=%b  targetPos=%d  currentPos=%d", flywheelController.isEnabled(), robot.getTurretTarget(), robot.getTurretPosition());
+//            telemetry.addData("Shooter", shootingController.getShootState());
+//            telemetry.addData("Spindexer", "pos=%.2f", robot.spindexerPos);
             telemetry.addData("Flywheel Tolerance", "%.0f rpm", flywheelController.getRpmTolerance());
             telemetry.addData("Launcher F", "%.0f", FlywheelPidfConfig.launcherF);
             robot.flushPanelsTelemetry(telemetry);
