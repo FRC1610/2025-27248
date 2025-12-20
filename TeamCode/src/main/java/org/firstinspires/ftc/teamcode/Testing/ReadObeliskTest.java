@@ -30,17 +30,14 @@ public class ReadObeliskTest extends LinearOpMode {
             return;
         }
 
-        boolean backPressedLast = false;
         AtomicBoolean scanEnabled = new AtomicBoolean(false);
         boolean scanning = false;
         ReadObelisk.ObeliskPattern detectedPattern = ReadObelisk.getCachedPattern();
 
         while (opModeIsActive()) {
-            boolean backPressed = gamepad2.back;
-            if (backPressed && !backPressedLast) {
+            if (gamepad2.backWasPressed()) {
                 scanEnabled.set(!scanEnabled.get());
             }
-            backPressedLast = backPressed;
 
             if (scanEnabled.get() && !scanning) {
                 scanning = true;
@@ -69,4 +66,3 @@ public class ReadObeliskTest extends LinearOpMode {
         }
     }
 }
-

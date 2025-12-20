@@ -30,11 +30,6 @@ public class Competition extends LinearOpMode {
     private ShootingController shootingController;
     private ArtifactTracker artifactTracker;
 
-    private boolean dpadUpPreviouslyPressed = false;
-    private boolean dpadDownPreviouslyPressed = false;
-    private boolean dpadLeftPreviouslyPressed = false;
-    private boolean dpadRightPreviouslyPressed = false;
-
     private final double[] spindexerPositions = new double[]{Constants.spindexer1, Constants.spindexer2, Constants.spindexer3};
     private int spindexerIndex = 0;
 
@@ -55,8 +50,6 @@ public class Competition extends LinearOpMode {
 
         // boolean dpadLeft2PreviouslyPressed = false;
         // dpadRight2PreviouslyPressed = false;
-        boolean backButtonPreviouslyPressed = false;
-        boolean rightBumperPreviouslyPressed = false;
 
 
         robot.init();  //Hardware configuration in RobotHardware.java
@@ -134,44 +127,30 @@ public class Competition extends LinearOpMode {
             }
 
             // Flywheel toggle on gamepad2 back
-            boolean backButtonPressed = gamepad2.back;
-            if (backButtonPressed && !backButtonPreviouslyPressed) {
+            if (gamepad2.backWasPressed()) {
                 flywheelController.toggle();
             }
-            backButtonPreviouslyPressed = backButtonPressed;
 
-            boolean dpadUp = gamepad1.dpad_up;
-            boolean dpadDown = gamepad1.dpad_down;
-            boolean dpadLeft = gamepad1.dpad_left;
-            boolean dpadRight = gamepad1.dpad_right;
-
-            if (dpadUp && !dpadUpPreviouslyPressed) {
+            if (gamepad1.dpadUpWasPressed()) {
                 flywheelController.adjustRpmTolerance(10.0);
             }
 
-            if (dpadDown && !dpadDownPreviouslyPressed) {
+            if (gamepad1.dpadDownWasPressed()) {
                 flywheelController.adjustRpmTolerance(-10.0);
             }
 
-            if (dpadRight && !dpadRightPreviouslyPressed) {
+            if (gamepad1.dpadRightWasPressed()) {
                 flywheelController.adjustLauncherFeedforward(1.0);
             }
 
-            if (dpadLeft && !dpadLeftPreviouslyPressed) {
+            if (gamepad1.dpadLeftWasPressed()) {
                 flywheelController.adjustLauncherFeedforward(-1.0);
             }
 
-            dpadUpPreviouslyPressed = dpadUp;
-            dpadDownPreviouslyPressed = dpadDown;
-            dpadLeftPreviouslyPressed = dpadLeft;
-            dpadRightPreviouslyPressed = dpadRight;
-
-            boolean rightBumperPressed = gamepad2.a;
-            if (rightBumperPressed && !rightBumperPreviouslyPressed && shootingController.isIdle()
+            if (gamepad2.aWasPressed() && shootingController.isIdle()
                     && flywheelController.isEnabled() && flywheelController.getTargetRpm() > 0) {
                 shootingController.startShootSequence();
             }
-            rightBumperPreviouslyPressed = rightBumperPressed;
 
             flywheelController.update();
             shootingController.update();

@@ -24,23 +24,15 @@ public class TurretTesting extends LinearOpMode {
         }
 
         int turretTarget = robot.turret.getCurrentPosition();
-        boolean leftPressedLast = false;
-        boolean rightPressedLast = false;
 
         while (opModeIsActive()) {
-            boolean leftPressed = gamepad1.dpad_left;
-            boolean rightPressed = gamepad1.dpad_right;
-
-            if (rightPressed && !rightPressedLast) {
+            if (gamepad1.dpadRightWasPressed()) {
                 turretTarget += 25;
             }
 
-            if (leftPressed && !leftPressedLast) {
+            if (gamepad1.dpadLeftWasPressed()) {
                 turretTarget -= 25;
             }
-
-            rightPressedLast = rightPressed;
-            leftPressedLast = leftPressed;
 
             robot.turret.setTargetPosition(turretTarget);
             robot.turret.setMode(DcMotor.RunMode.RUN_TO_POSITION);
