@@ -194,7 +194,7 @@ public class StateMachine {
                         break;
                     case 3:
                         if ( completedPath() ) {
-                            followPath(DecodePaths.AUTO_PATHS.NEAR_SHOOT_AREA_TO_SPIKE1, true);
+                            followPath(DecodePaths.AUTO_PATHS.NEAR_SHOOT_AREA_TO_SPIKE1, false);
                             pathTimer.resetTimer();
                             autoNearSubStep++;
                         }
@@ -202,7 +202,7 @@ public class StateMachine {
                     case 4:
                         if ( completePathWithDelay(1.0) ) {
                             robot.runIntake(RobotHardware.IntakeDirection.IN);
-                            followPath(DecodePaths.AUTO_PATHS.NEAR_PICKUP_SPIKE1_PART1, true);
+                            followPath(DecodePaths.AUTO_PATHS.NEAR_PICKUP_SPIKE1_PART1, false);
                             pathTimer.resetTimer();
                             autoNearSubStep++;
                         }
