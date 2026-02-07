@@ -43,9 +43,7 @@ public class StateMachine {
 
     private Map<DecodePaths.AUTO_PATHS, PathChain> paths;
 
-    public StateMachine(RobotHardware hardware, Follower follower, ShootingController shootingController,
-                        FlywheelController flywheelController, TurretTracker turretTracker,
-                        SpindexerController spindexerController) {
+    public StateMachine(RobotHardware hardware, Follower follower, ShootingController shootingController, FlywheelController flywheelController, TurretTracker turretTracker, SpindexerController spindexerController) {
         this.robot = hardware;
         this.follower = follower;
         this.shootingController = shootingController;
@@ -156,6 +154,10 @@ public class StateMachine {
     private boolean completedPath() { return !follower.isBusy(); }
 
     private boolean completePathWithDelay(double seconds) { return completedPath() && pathTimer.getElapsedTimeSeconds() >= seconds; }
+    private boolean completePathWithDelayOrTimeout(double minSeconds, double maxSeconds) {
+        double elapsed = pathTimer.getElapsedTimeSeconds();
+        return (completedPath() && elapsed >= minSeconds) || elapsed >= maxSeconds;
+    }
 
     public void update() {
         switch (currentState) {
@@ -199,7 +201,7 @@ public class StateMachine {
                         }
                         break;
                     case 4:
-                        if ( completePathWithDelay(1.0) ) {
+                        if ( completePathWithDelayOrTimeout(1.0, 3.0) ) {
                             robot.runIntake(RobotHardware.IntakeDirection.IN);
                             followPath(DecodePaths.AUTO_PATHS.NEAR_PICKUP_SPIKE1_PART1, true);
                             pathTimer.resetTimer();
@@ -207,14 +209,14 @@ public class StateMachine {
                         }
                         break;
                     case 5:
-                        if ( completePathWithDelay(1.0) ) {
+                        if ( completePathWithDelayOrTimeout(1.0, 3.0) ) {
                             followPath(DecodePaths.AUTO_PATHS.NEAR_PICKUP_SPIKE1_PART2, true);
                             pathTimer.resetTimer();
                             autoNearSubStep++;
                         }
                         break;
                     case 6:
-                        if ( completePathWithDelay(1.5) ) {
+                        if ( completePathWithDelayOrTimeout(1.5, 3.5) ) {
                             robot.runIntake(RobotHardware.IntakeDirection.STOP);
                             followPath(DecodePaths.AUTO_PATHS.NEAR_GOTO_SHOOT_SPIKE1, true);
                             autoNearSubStep++;

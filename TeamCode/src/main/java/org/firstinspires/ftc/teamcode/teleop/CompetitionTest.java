@@ -82,11 +82,13 @@ public class CompetitionTest extends LinearOpMode {
 
             /// DPad Gamepad 1
             if (gamepad1.dpadUpWasPressed()) {
-                flywheelController.adjustRpmTolerance(10.0);
+                //flywheelController.adjustRpmTolerance(10.0);
+                Constants.LAUNCH_ZONE_FAR_FAR_RPM += 5;
             }
 
             if (gamepad1.dpadDownWasPressed()) {
-                flywheelController.adjustRpmTolerance(-10.0);
+                //flywheelController.adjustRpmTolerance(-10.0);
+                Constants.LAUNCH_ZONE_FAR_FAR_RPM -= 5;
             }
 
             if (gamepad1.dpadLeftWasPressed()) {
