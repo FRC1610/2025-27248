@@ -180,6 +180,9 @@ public class CompetitionTest extends LinearOpMode {
                 kickerStandToggled = !kickerStandToggled;
             }
 
+            /// gamepad 1 Reset Odometry Pinpoint, making sure the robot is aligned correctly
+            if (gamepad1.backWasPressed()) robot.pinpoint.setHeading(0, AngleUnit.DEGREES);
+
             if (kickerStandToggled) {
                 robot.setColorOfBackLights(rgbIndicator.LEDColors.INDIGO);
             } else {

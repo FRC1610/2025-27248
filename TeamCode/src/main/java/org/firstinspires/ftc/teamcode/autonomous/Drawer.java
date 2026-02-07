@@ -16,7 +16,7 @@ public class Drawer {
     private final FieldManager field;
     private final Follower follower;
 
-    Drawer(FieldManager field, Follower follower) {
+    public Drawer(FieldManager field, Follower follower) {
         this.field = field;
         this.follower = follower;
     }

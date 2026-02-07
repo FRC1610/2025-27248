@@ -128,14 +128,13 @@ public class StateMachine {
     }
 
     private boolean breakOutAuto(DecodePaths.AUTO_PATHS breakPath) {
-//        if (autoTimer.getElapsedTimeSeconds() >= 28.75) {
-//            robot.runIntake(RobotHardware.IntakeDirection.STOP);
-//            spindexerController.setPosition(0);
-//            spindexerController.disableAuto();
-//            stopFlywheel();
-//            followPath(breakPath);
-//            return true;
-//        }
+        if (autoTimer.getElapsedTimeSeconds() >= 28.75) {
+            robot.runIntake(RobotHardware.IntakeDirection.STOP);
+            spindexerController.setPosition(0);
+            stopFlywheel();
+            followPath(breakPath);
+            return true;
+        }
         return false;
     }
 
