@@ -10,10 +10,14 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.Constants;
 import org.firstinspires.ftc.teamcode.RobotHardware;
+import java.util.ArrayDeque;
 import java.util.Locale;
 import java.util.List;
 
 public class TurretTracker {
+
+    private static final int LIMELIGHT_TX_WINDOW = 5;
+    private static final double LIMELIGHT_TX_HOLD_SECONDS = 0.2;
 
     private final RobotHardware robot;
     private final Telemetry telemetry;
@@ -21,11 +25,16 @@ public class TurretTracker {
     private double lastError = 0;
     private double integral = 0;
     private final ElapsedTime timer = new ElapsedTime();
+    private final ElapsedTime limelightHoldTimer = new ElapsedTime();
+    private final ArrayDeque<Double> txSamples = new ArrayDeque<>();
+    private double lastSmoothedTx = Double.NaN;
+    private double lastSmoothedDistanceFeet = Double.NaN;
 
     public TurretTracker(RobotHardware robot, Telemetry telemetry) {
 
         this.robot = robot;
         this.telemetry = telemetry;
+        limelightHoldTimer.reset();
     }
 
     public void update() {
@@ -40,40 +49,14 @@ public class TurretTracker {
         // Get latest frame
         LLResult result = robot.getLatestLimelightResult();
 
-        // SAFETY: result missing or invalid
-        if (result == null || !result.isValid()) {
+        SmoothedLimelightData smoothedData = getSmoothedLimelightData(result);
+        if (smoothedData == null) {
             robot.turret.setPower(0);
             return;
         }
 
-        // Get fiducials (FTC API)
-        List<LLResultTypes.FiducialResult> fiducials = result.getFiducialResults();
-        if (fiducials == null || fiducials.isEmpty()) {
-            robot.turret.setPower(0);
-            return;
-        }
-
-        // Since the pipeline already filters the tag ID,
-        // the first fiducial is always our target.
-        LLResultTypes.FiducialResult fid = fiducials.get(0);
-
-        // Horizontal angle offset (tx)
-        double tx = fid.getTargetXDegrees();
-
-        // Compute distance to target from camera pose (meters → feet)
-        Pose3D cameraSpacePose = fid.getTargetPoseCameraSpace();
-        double distanceFeet = Double.NaN;
-        if (cameraSpacePose != null) {
-            Position position = cameraSpacePose.getPosition();
-            if (position != null) {
-                Position positionMeters = position.toUnit(DistanceUnit.METER);
-                double x = positionMeters.x;
-                double y = positionMeters.y;
-                double z = positionMeters.z;
-                double distanceMeters = Math.sqrt(x * x + y * y + z * z);
-                distanceFeet = distanceMeters * 3.28084;
-            }
-        }
+        double tx = smoothedData.txDegrees;
+        double distanceFeet = smoothedData.distanceFeet;
 
         double aimOffset = 0.0;
         if (Double.isFinite(distanceFeet) && distanceFeet > Constants.TURRET_FAR_AIM_DISTANCE_FEET) {
@@ -115,10 +98,69 @@ public class TurretTracker {
                 ? String.format(Locale.US, "%.2f ft", distanceFeet)
                 : "n/a";
         telemetry.addData("Turret", "id=%d dist=%s aim=%.3f power=%.3f",
-                fid.getFiducialId(), distanceText, aimOffset, power);
+                smoothedData.fiducialId, distanceText, aimOffset, power);
     }
 
     public int getTurretPosition() {
         return robot.turret.getCurrentPosition();
+    }
+
+    private SmoothedLimelightData getSmoothedLimelightData(LLResult result) {
+        if (result != null && result.isValid()) {
+            List<LLResultTypes.FiducialResult> fiducials = result.getFiducialResults();
+            if (fiducials != null && !fiducials.isEmpty()) {
+                LLResultTypes.FiducialResult fid = fiducials.get(0);
+
+                double tx = fid.getTargetXDegrees();
+                Pose3D cameraSpacePose = fid.getTargetPoseCameraSpace();
+                double distanceFeet = Double.NaN;
+                if (cameraSpacePose != null) {
+                    Position position = cameraSpacePose.getPosition();
+                    if (position != null) {
+                        Position positionMeters = position.toUnit(DistanceUnit.METER);
+                        double x = positionMeters.x;
+                        double y = positionMeters.y;
+                        double z = positionMeters.z;
+                        double distanceMeters = Math.sqrt(x * x + y * y + z * z);
+                        distanceFeet = distanceMeters * 3.28084;
+                    }
+                }
+
+                txSamples.addLast(tx);
+                while (txSamples.size() > LIMELIGHT_TX_WINDOW) {
+                    txSamples.removeFirst();
+                }
+                double sum = 0.0;
+                for (double sample : txSamples) {
+                    sum += sample;
+                }
+                lastSmoothedTx = sum / txSamples.size();
+                lastSmoothedDistanceFeet = distanceFeet;
+                limelightHoldTimer.reset();
+                return new SmoothedLimelightData(fid.getFiducialId(), lastSmoothedTx, lastSmoothedDistanceFeet);
+            }
+        }
+
+        if (Double.isFinite(lastSmoothedTx)
+                && limelightHoldTimer.seconds() < LIMELIGHT_TX_HOLD_SECONDS) {
+            return new SmoothedLimelightData(-1, lastSmoothedTx, lastSmoothedDistanceFeet);
+        }
+
+        txSamples.clear();
+        lastSmoothedTx = Double.NaN;
+        lastSmoothedDistanceFeet = Double.NaN;
+        return null;
+    }
+
+    private static class SmoothedLimelightData {
+        private final int fiducialId;
+        private final double txDegrees;
+        private final double distanceFeet;
+
+        private SmoothedLimelightData(int fiducialId, double txDegrees, double distanceFeet) {
+            this.fiducialId = fiducialId;
+            this.txDegrees = txDegrees;
+            this.distanceFeet = distanceFeet;
+        }
     }
 }
