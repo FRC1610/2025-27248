@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.teleop;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -35,6 +36,8 @@ public class Competition extends LinearOpMode {
         ShootingController shootingController = new ShootingController(robot, flywheelController, spindexerController, telemetry);
 
         boolean kickerStandToggled = false;
+        final int manualTurretStep = 50;
+        boolean manualTurretMoveInProgress = false;
 
         spindexerController.init();
 
@@ -91,12 +94,28 @@ public class Competition extends LinearOpMode {
                 Constants.LAUNCH_ZONE_FAR_FAR_RPM -= 5;
             }
 
-            if (gamepad1.dpadLeftWasPressed()) {
-                flywheelController.adjustLauncherFeedforward(1.0);
+            boolean manualTurretLeftPressed = gamepad1.dpadLeftWasPressed();
+            boolean manualTurretRightPressed = gamepad1.dpadRightWasPressed();
+            if ((manualTurretLeftPressed || manualTurretRightPressed) && robot.turret != null) {
+                if (flywheelController.isEnabled()) {
+                    flywheelController.toggle();
+                }
+                shootingController.stop();
+
+                int direction = manualTurretRightPressed ? 1 : -1;
+                int turretTarget = robot.turret.getCurrentPosition() + (direction * manualTurretStep);
+                robot.turret.setTargetPosition(turretTarget);
+                robot.turret.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                robot.turret.setPower(0.40);
+                manualTurretMoveInProgress = true;
+            } else if (manualTurretLeftPressed || manualTurretRightPressed) {
+                telemetry.addLine("ERROR: turret motor is NULL!");
             }
 
-            if (gamepad1.dpadRightWasPressed()) {
-                flywheelController.adjustLauncherFeedforward(-1.0);
+            if (manualTurretMoveInProgress && robot.turret != null && !robot.turret.isBusy()) {
+                robot.turret.setPower(0);
+                robot.resetTurretEncoder();
+                manualTurretMoveInProgress = false;
             }
 
             if (gamepad1.leftStickButtonWasPressed()) {
@@ -138,11 +157,12 @@ public class Competition extends LinearOpMode {
             }
 
             /// Gamepad 2 Tracking
-            boolean trackingActive = flywheelController.isEnabled() || gamepad2.start;
+            boolean manualTurretActive = manualTurretMoveInProgress || manualTurretLeftPressed || manualTurretRightPressed;
+            boolean trackingActive = (flywheelController.isEnabled() || gamepad2.start) && !manualTurretActive;
             if (trackingActive) {
                 turretTracker.update();
                 robot.headlight.setPosition(Constants.headlightPower);
-            } else {
+            } else if (!manualTurretMoveInProgress) {
                 robot.turret.setPower(0);
                 robot.headlight.setPosition(0.0);
             }
