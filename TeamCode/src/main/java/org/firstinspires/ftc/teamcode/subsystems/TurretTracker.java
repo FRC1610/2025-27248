@@ -100,7 +100,7 @@ public class TurretTracker {
         double power = kP * error + kI * integral + kD * derivative;
 
         // Turret encoder limits
-        double pos = robot.turret.getCurrentPosition();
+        double pos = robot.getTurretPosition();
         if ((pos <= Constants.TURRET_MIN && power < 0) ||
                 (pos >= Constants.TURRET_MAX && power > 0)) {
             power = 0;
@@ -119,6 +119,6 @@ public class TurretTracker {
     }
 
     public int getTurretPosition() {
-        return robot.turret.getCurrentPosition();
+        return robot.getTurretPosition();
     }
 }

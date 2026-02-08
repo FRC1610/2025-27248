@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -42,6 +43,8 @@ public class Competition extends LinearOpMode {
 
         boolean backButtonPreviouslyPressed = false;
         boolean rightBumperPreviouslyPressed = false;
+        final int manualTurretStep = 50;
+        boolean manualTurretMoveInProgress = false;
 
 
         robot.init();  //Hardware configuration in RobotHardware.java
@@ -99,16 +102,6 @@ public class Competition extends LinearOpMode {
             // D-Pad left/right = turret manual rotate
             // Trigger left/right = (hold) intake forward/reverse
 
-            // Run turret tracking when the flywheel is active or Start is held for manual testing
-            boolean trackingActive = flywheelController.isEnabled() || gamepad2.start;
-            if (trackingActive) {
-                turretTracker.update();
-                robot.headlight.setPosition(Constants.headlightPower); //Set light power here
-            } else {
-                robot.turret.setPower(0);
-                robot.headlight.setPosition(0.0);
-            }
-
             // Flywheel toggle on gamepad2 back
             boolean backButtonPressed = gamepad2.back;
             if (backButtonPressed && !backButtonPreviouslyPressed) {
@@ -131,12 +124,28 @@ public class Competition extends LinearOpMode {
                 flywheelController.adjustRpmTolerance(-10.0);
             }
 
-            if (dpadRight && !dpadRightPreviouslyPressed) {
-                flywheelController.adjustLauncherFeedforward(1.0);
+            boolean manualTurretLeftPressed = dpadLeft && !dpadLeftPreviouslyPressed;
+            boolean manualTurretRightPressed = dpadRight && !dpadRightPreviouslyPressed;
+            if ((manualTurretLeftPressed || manualTurretRightPressed) && robot.turret != null) {
+                if (flywheelController.isEnabled()) {
+                    flywheelController.toggle();
+                }
+                shootingController.stop();
+
+                int direction = manualTurretRightPressed ? 1 : -1;
+                int turretTarget = robot.turret.getCurrentPosition() + (direction * manualTurretStep);
+                robot.turret.setTargetPosition(turretTarget);
+                robot.turret.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                robot.turret.setPower(0.40);
+                manualTurretMoveInProgress = true;
+            } else if (manualTurretLeftPressed || manualTurretRightPressed) {
+                telemetry.addLine("ERROR: turret motor is NULL!");
             }
 
-            if (dpadLeft && !dpadLeftPreviouslyPressed) {
-                flywheelController.adjustLauncherFeedforward(-1.0);
+            if (manualTurretMoveInProgress && robot.turret != null && !robot.turret.isBusy()) {
+                robot.turret.setPower(0);
+                robot.resetTurretEncoder();
+                manualTurretMoveInProgress = false;
             }
 
             if (gamepad1LeftStickDown && !gamepad1LeftStickPreviouslyPressed) {
@@ -149,6 +158,17 @@ public class Competition extends LinearOpMode {
             dpadDownPreviouslyPressed = dpadDown;
             dpadLeftPreviouslyPressed = dpadLeft;
             dpadRightPreviouslyPressed = dpadRight;
+
+            // Run turret tracking when the flywheel is active or Start is held for manual testing
+            boolean manualTurretActive = manualTurretMoveInProgress || manualTurretLeftPressed || manualTurretRightPressed;
+            boolean trackingActive = (flywheelController.isEnabled() || gamepad2.start) && !manualTurretActive;
+            if (trackingActive) {
+                turretTracker.update();
+                robot.headlight.setPosition(Constants.headlightPower); //Set light power here
+            } else if (!manualTurretMoveInProgress) {
+                robot.turret.setPower(0);
+                robot.headlight.setPosition(0.0);
+            }
 
             boolean rightBumperPressed = gamepad2.a;
             if (rightBumperPressed && !rightBumperPreviouslyPressed && shootingController.isIdle()

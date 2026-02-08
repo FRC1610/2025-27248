@@ -53,6 +53,7 @@ public class RobotHardware {
     public DistanceSensor distance3;
 
     private double powerDampener = 1;
+    private int turretEncoderOffset = 0;
 
     private TelemetryManager panelsTelemetry;
 
@@ -237,6 +238,22 @@ public class RobotHardware {
         }
 
         latestLimelightResult = limelight.getLatestResult();
+    }
+
+    public int getTurretPosition() {
+        if (turret == null) {
+            return 0;
+        }
+        return turret.getCurrentPosition() + turretEncoderOffset;
+    }
+
+    public void resetTurretEncoder() {
+        if (turret == null) {
+            return;
+        }
+        turretEncoderOffset += turret.getCurrentPosition();
+        turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        turret.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     public LLResult getLatestLimelightResult() {
