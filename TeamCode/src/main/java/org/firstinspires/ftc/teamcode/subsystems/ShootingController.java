@@ -127,9 +127,7 @@ public class ShootingController {
         telemetry.addData("State", shootState);
     }
 
-    public void update() {
-        update(true);
-    }
+    public void update() { update(true); }
 
     /**
      * Update the shooting sequence and report when the full firing cycle has finished.
