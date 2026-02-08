@@ -31,7 +31,6 @@ public class FlywheelController {
 
     private static final double MID_ZONE_DISTANCE_FT = 3.5;
     private static final double FAR_ZONE_DISTANCE_FT = 6.0;
-    private static final double FAR_FAR_ZONE_DISTANCE_FT = 8.0;
 
     private final RobotHardware robot;
     private final Telemetry telemetry;
@@ -178,9 +177,15 @@ public class FlywheelController {
                     double distanceMeters = Math.sqrt(xMeters * xMeters + yMeters * yMeters + zMeters * zMeters);
                     double distanceFeet = distanceMeters * 3.28084;
 
-                    if (distanceFeet >= FAR_FAR_ZONE_DISTANCE_FT) {
+                    if (distanceFeet >= Constants.FAR_DEADZONE_FT) {
                         //setLauncherFeedforward(29);
-                        rpm = Constants.LAUNCH_ZONE_FAR_FAR_RPM;
+                        //rpm = Constants.LAUNCH_ZONE_FAR_FAR_RPM;
+
+                        double clampedDistance = Range.clip(distanceFeet, Constants.FAR_DEADZONE_FT, 14.5);
+                        double distanceRatio = (clampedDistance - Constants.FAR_DEADZONE_FT) / (14.5 - Constants.FAR_DEADZONE_FT);
+                        rpm = Constants.LAUNCH_ZONE_FAR_FAR_RPM
+                                + distanceRatio * (2900 - Constants.LAUNCH_ZONE_FAR_FAR_RPM);
+
                     } else if (distanceFeet < MID_ZONE_DISTANCE_FT) {
                         //setLauncherFeedforward(31);
                         rpm = Constants.LAUNCH_ZONE_MID_RPM;

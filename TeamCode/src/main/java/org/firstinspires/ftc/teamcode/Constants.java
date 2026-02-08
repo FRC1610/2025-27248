@@ -13,12 +13,12 @@ public class Constants {
     public static final double DEFAULT_RPM = 1500.0;
     public static final double LAUNCH_ZONE_MID_RPM = 2200.0; // ~3.5 ft, OLD : 2000.0
     public static final double LAUNCH_ZONE_FAR_RPM = 2350.0; // ~5.5 ft, OLD : 2200.0
-    public static double LAUNCH_ZONE_FAR_FAR_RPM = 2790.0; // ~8 ft, OLD : 2700.0, 2765.0
+    public static double LAUNCH_ZONE_FAR_FAR_RPM = 2785.0; // ~8 ft, OLD : 2700.0, 2765.0
     public static final double FLYWHEEL_TOLERANCE_RPM = 85.0;
     public static final double LAUNCHER_GEAR_REDUCTION = 16.0 / 24.0; // motor:flywheel = 2:3
 
     /// LAUNCHER DISTANCES
-    public static final double NEAR_DEADZONE_FT = 5.0;
+    public static final double NEAR_DEADZONE_FT = 5.5;
     public static final double FAR_DEADZONE_FT = 8.5;
 
     /// LAUNCHER PIDF (base gains in motor units)

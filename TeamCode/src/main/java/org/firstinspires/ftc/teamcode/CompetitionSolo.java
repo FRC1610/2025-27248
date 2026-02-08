@@ -18,7 +18,7 @@ import org.firstinspires.ftc.teamcode.subsystems.TurretTracker;
 import java.util.Locale;
 
 //@Disabled
-@TeleOp(name = "Competition Main (SOLO MODE)", group = "TeleOp")
+@TeleOp(name = "Competition Main (SOLO MODE) (DEPRECATED)", group = "TeleOp")
 public class CompetitionSolo extends LinearOpMode {
 
     final RobotHardware robot = new RobotHardware(this);

@@ -20,6 +20,7 @@ public class ShootingController {
         FIRE,
         RETRACT,
         FINISH,
+        DEADZONE,
     }
 
     private final RobotHardware robot;
@@ -51,7 +52,7 @@ public class ShootingController {
 
     public void update(boolean checkArtifacts) {
         if (!flywheelController.isEnabled() || flywheelController.getTargetRpm() <= 0) return;
-        if (isInDeadZone()) return;
+        if (isInDeadZone()) shootState = ShootState.DEADZONE;
 
         switch (shootState) {
             case WAIT_FOR_SPINUP:
@@ -60,11 +61,11 @@ public class ShootingController {
 
                 if (artifactCount == 0) {
                     shootState = ShootState.FINISH;
-                    return;
+                    break;
                 }
 
                 if (isInDeadZone()) {
-                    shootState = ShootState.FINISH;
+                    shootState = ShootState.DEADZONE;
                     break;
                 }
 
@@ -85,7 +86,7 @@ public class ShootingController {
 
                 if (artifactCount == 0) {
                     shootState = ShootState.FINISH;
-                    return;
+                    break;
                 }
 
                 shootTimer.reset();
@@ -94,7 +95,7 @@ public class ShootingController {
                 break;
             case FIRE:
                 if (isInDeadZone()) {
-                    shootState = ShootState.FINISH;
+                    shootState = ShootState.DEADZONE;
                     break;
                 }
                 robot.kicker.setPosition(Constants.KICKER_UP);
@@ -119,12 +120,16 @@ public class ShootingController {
                 spindexerController.setPosition(0);
                 shootState = ShootState.IDLE;
                 break;
+            case DEADZONE:
+                if (!isInDeadZone()) shootState = ShootState.WAIT_FOR_SPINUP;
+                break;
             default:
                 shootState = ShootState.IDLE;
                 break;
         }
 
-        telemetry.addData("State", shootState);
+
+        telemetry.addData("Shooting Controller State", shootState);
     }
 
     public void update() { update(true); }
