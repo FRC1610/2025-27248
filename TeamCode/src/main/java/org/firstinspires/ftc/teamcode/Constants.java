@@ -17,6 +17,10 @@ public class Constants {
     public static final double FLYWHEEL_TOLERANCE_RPM = 85.0;
     public static final double LAUNCHER_GEAR_REDUCTION = 16.0 / 24.0; // motor:flywheel = 2:3
 
+    /// LAUNCHER DISTANCES
+    public static final double NEAR_DEADZONE_FT = 5.0;
+    public static final double FAR_DEADZONE_FT = 8.5;
+
     /// LAUNCHER PIDF (base gains in motor units)
     // Free speed: 6000 rpm = 100 rps → 2,800 ticks/s (28 tpr encoder)
     // REV PIDF F = 32767 / maxTicksPerSecond

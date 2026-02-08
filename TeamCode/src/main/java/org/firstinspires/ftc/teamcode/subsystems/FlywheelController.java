@@ -90,6 +90,30 @@ public class FlywheelController {
         return (getCurrentRpm() >= (targetRpm - (rpmTolerance/2))) && ( getCurrentRpm() <= (targetRpm + rpmTolerance) ); //return Math.abs(getCurrentRpm() - targetRpm) <= rpmTolerance;
     }
 
+    public double getDistanceFromAprilTag() {
+        LLResult result = robot.getLatestLimelightResult();
+        if (result != null && result.isValid()) {
+            List<LLResultTypes.FiducialResult> fiducials = result.getFiducialResults();
+            if (fiducials != null && !fiducials.isEmpty()) {
+                LLResultTypes.FiducialResult fid = fiducials.get(0);
+                Pose3D pose = fid.getRobotPoseTargetSpace();
+                Position position = pose != null ? pose.getPosition() : null;
+
+                if (position != null) {
+                    Position metersPosition = position.toUnit(DistanceUnit.METER);
+                    double xMeters = metersPosition.x;
+                    double yMeters = metersPosition.y;
+                    double zMeters = metersPosition.z;
+                    // Use full 3D translation magnitude to avoid underestimating range.
+                    double distanceMeters = Math.sqrt(xMeters * xMeters + yMeters * yMeters + zMeters * zMeters);
+                    // Distance in feet
+                    return distanceMeters * 3.28084;
+                }
+            }
+        }
+        return 0.0;
+    }
+
     public double getRpmTolerance() {
         return rpmTolerance;
     }

@@ -37,6 +37,11 @@ public class ShootingController {
         this.telemetry = telemetry;
     }
 
+    public boolean isInDeadZone() {
+        double distance = this.flywheelController.getDistanceFromAprilTag();
+        return distance >= Constants.NEAR_DEADZONE_FT && distance <= Constants.FAR_DEADZONE_FT;
+    }
+
     public void startShootSequence() {
         shootTimer.reset();
         spindexerController.setPosition(0);
@@ -46,15 +51,21 @@ public class ShootingController {
 
     public void update(boolean checkArtifacts) {
         if (!flywheelController.isEnabled() || flywheelController.getTargetRpm() <= 0) return;
+        if (isInDeadZone()) return;
 
         switch (shootState) {
             case WAIT_FOR_SPINUP:
                 // Check if spindexer is in position
-                if (!spindexerController.isFinished()) return;
+                if (!spindexerController.isFinished()) break;
 
                 if (artifactCount == 0) {
                     shootState = ShootState.FINISH;
                     return;
+                }
+
+                if (isInDeadZone()) {
+                    shootState = ShootState.FINISH;
+                    break;
                 }
 
                 // Check if flywheel is at speed and is aimed at the target
@@ -70,7 +81,7 @@ public class ShootingController {
                 shootState = ShootState.NEXT_ARTIFACT;
                 break;
             case NEXT_ARTIFACT:
-                if (!spindexerController.isFinished()) return;
+                if (!spindexerController.isFinished()) break;
 
                 if (artifactCount == 0) {
                     shootState = ShootState.FINISH;
@@ -82,6 +93,10 @@ public class ShootingController {
 
                 break;
             case FIRE:
+                if (isInDeadZone()) {
+                    shootState = ShootState.FINISH;
+                    break;
+                }
                 robot.kicker.setPosition(Constants.KICKER_UP);
                 shootTimer.reset();
                 shootState = ShootState.RETRACT;
