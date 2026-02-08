@@ -71,6 +71,10 @@ public class FlywheelController {
         }
     }
 
+    public void setTargetRPM(double delta) {
+        targetRpm = delta;
+    }
+
     public boolean isEnabled() {
         return flywheelEnabled;
     }
@@ -132,7 +136,7 @@ public class FlywheelController {
     /**
      * Call every loop to update the RPM based on the detected AprilTag.
      */
-    public void update() {
+    public void update(boolean jsDoTarget) {
         robot.launcherGroup.refreshLauncherPIDFFromConfig();
 
         if (!flywheelEnabled) {
@@ -144,6 +148,13 @@ public class FlywheelController {
         if (robot.launcherGroup == null) {
             telemetry.addLine("ERROR: launcher motor is NULL!");
             setFrontLedColor(LEDColors.OFF);
+            return;
+        }
+
+        if (jsDoTarget) {
+            setFlywheelRpm(targetRpm);
+            updateFrontLedColor();
+            publishPanelsFlywheelTelemetry(targetRpm, getCurrentRpm());
             return;
         }
 
@@ -196,6 +207,7 @@ public class FlywheelController {
         }
     }
 
+    public void update() { update(false); }
     private double extractDistanceFeet(LLResult result) {
         if (result != null && result.isValid()) {
             List<LLResultTypes.FiducialResult> fiducials = result.getFiducialResults();
@@ -255,7 +267,7 @@ public class FlywheelController {
         publishPanelsFlywheelTelemetry(targetRpm, getCurrentRpm());
     }
 
-    private void setFlywheelRpm(double rpm) {
+    public void setFlywheelRpm(double rpm) {
         if (rpm > 0 && targetRpm <= 0) {
             spinupSetpointRpm = rpm;
             spinupTimer.reset();

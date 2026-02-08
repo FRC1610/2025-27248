@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
+import com.qualcomm.hardware.limelightvision.LLStatus;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -9,6 +10,7 @@ import org.firstinspires.ftc.teamcode.Constants;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 
 import java.util.List;
+import java.util.Objects;
 
 public class ShootingController {
 
@@ -51,7 +53,7 @@ public class ShootingController {
     }
 
     public void update(boolean checkArtifacts) {
-        if (!flywheelController.isEnabled() || flywheelController.getTargetRpm() <= 0) return;
+        if (!flywheelController.isEnabled() || flywheelController.getTargetRpm() <= 0 && robot.limelight != null) return;
         if (isInDeadZone()) shootState = ShootState.DEADZONE;
 
         switch (shootState) {
