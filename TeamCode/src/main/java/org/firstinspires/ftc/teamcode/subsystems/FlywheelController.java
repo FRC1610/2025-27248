@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.Constants;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 import org.firstinspires.ftc.teamcode.drivers.rgbIndicator.LEDColors;
 
+import java.util.ArrayDeque;
 import java.util.List;
 
 /**
@@ -31,6 +32,8 @@ public class FlywheelController {
 
     private static final double MID_ZONE_DISTANCE_FT = 3.5;
     private static final double FAR_ZONE_DISTANCE_FT = 6.0;
+    private static final int LIMELIGHT_DISTANCE_WINDOW = 5;
+    private static final double LIMELIGHT_DISTANCE_HOLD_SECONDS = 0.25;
 
     private final RobotHardware robot;
     private final Telemetry telemetry;
@@ -41,6 +44,9 @@ public class FlywheelController {
 
     private final ElapsedTime spinupTimer = new ElapsedTime();
     private final ElapsedTime flywheelAdjustmentTimer = new ElapsedTime();
+    private final ElapsedTime limelightHoldTimer = new ElapsedTime();
+    private final ArrayDeque<Double> limelightDistancesFeet = new ArrayDeque<>();
+    private double lastSmoothedDistanceFeet = Double.NaN;
     private boolean measuringSpinup = false;
     private double spinupSetpointRpm = 0.0;
 
@@ -50,6 +56,7 @@ public class FlywheelController {
         this.panelsTelemetry = robot.getPanelsTelemetry();
 
         resetDriverTuningFromConstants();
+        limelightHoldTimer.reset();
     }
 
      /**
@@ -62,6 +69,10 @@ public class FlywheelController {
         } else {
             stop();
         }
+    }
+
+    public void setTargetRPM(double delta) {
+        targetRpm = delta;
     }
 
     public boolean isEnabled() {
@@ -91,26 +102,8 @@ public class FlywheelController {
 
     public double getDistanceFromAprilTag() {
         LLResult result = robot.getLatestLimelightResult();
-        if (result != null && result.isValid()) {
-            List<LLResultTypes.FiducialResult> fiducials = result.getFiducialResults();
-            if (fiducials != null && !fiducials.isEmpty()) {
-                LLResultTypes.FiducialResult fid = fiducials.get(0);
-                Pose3D pose = fid.getRobotPoseTargetSpace();
-                Position position = pose != null ? pose.getPosition() : null;
-
-                if (position != null) {
-                    Position metersPosition = position.toUnit(DistanceUnit.METER);
-                    double xMeters = metersPosition.x;
-                    double yMeters = metersPosition.y;
-                    double zMeters = metersPosition.z;
-                    // Use full 3D translation magnitude to avoid underestimating range.
-                    double distanceMeters = Math.sqrt(xMeters * xMeters + yMeters * yMeters + zMeters * zMeters);
-                    // Distance in feet
-                    return distanceMeters * 3.28084;
-                }
-            }
-        }
-        return 0.0;
+        double distanceFeet = extractDistanceFeet(result);
+        return Double.isFinite(distanceFeet) ? distanceFeet : 0.0;
     }
 
     public double getRpmTolerance() {
@@ -143,7 +136,7 @@ public class FlywheelController {
     /**
      * Call every loop to update the RPM based on the detected AprilTag.
      */
-    public void update() {
+    public void update(boolean jsDoTarget) {
         robot.launcherGroup.refreshLauncherPIDFFromConfig();
 
         if (!flywheelEnabled) {
@@ -158,48 +151,34 @@ public class FlywheelController {
             return;
         }
 
+        if (jsDoTarget) {
+            setFlywheelRpm(targetRpm);
+            updateFrontLedColor();
+            publishPanelsFlywheelTelemetry(targetRpm, getCurrentRpm());
+            return;
+        }
+
         double rpm = Constants.DEFAULT_RPM;
 
         LLResult result = robot.getLatestLimelightResult();
-        if (result != null && result.isValid()) {
-            List<LLResultTypes.FiducialResult> fiducials = result.getFiducialResults();
-            if (fiducials != null && !fiducials.isEmpty()) {
-                LLResultTypes.FiducialResult fid = fiducials.get(0);
-                Pose3D pose = fid.getRobotPoseTargetSpace();
-                Position position = pose != null ? pose.getPosition() : null;
+        double distanceFeet = getSmoothedDistanceFeet(result);
+        if (Double.isFinite(distanceFeet)) {
+            if (distanceFeet >= Constants.FAR_DEADZONE_FT) {
+                double clampedDistance = Range.clip(distanceFeet, Constants.FAR_DEADZONE_FT, 14.5);
+                double distanceRatio = (clampedDistance - Constants.FAR_DEADZONE_FT) / (14.5 - Constants.FAR_DEADZONE_FT);
+                rpm = Constants.LAUNCH_ZONE_FAR_FAR_RPM
+                        + distanceRatio * (2900 - Constants.LAUNCH_ZONE_FAR_FAR_RPM);
 
-                if (position != null) {
-                    Position metersPosition = position.toUnit(DistanceUnit.METER);
-                    double xMeters = metersPosition.x;
-                    double yMeters = metersPosition.y;
-                    double zMeters = metersPosition.z;
-                    // Use full 3D translation magnitude to avoid underestimating range.
-                    double distanceMeters = Math.sqrt(xMeters * xMeters + yMeters * yMeters + zMeters * zMeters);
-                    double distanceFeet = distanceMeters * 3.28084;
-
-                    if (distanceFeet >= Constants.FAR_DEADZONE_FT) {
-                        //setLauncherFeedforward(29);
-                        //rpm = Constants.LAUNCH_ZONE_FAR_FAR_RPM;
-
-                        double clampedDistance = Range.clip(distanceFeet, Constants.FAR_DEADZONE_FT, 14.5);
-                        double distanceRatio = (clampedDistance - Constants.FAR_DEADZONE_FT) / (14.5 - Constants.FAR_DEADZONE_FT);
-                        rpm = Constants.LAUNCH_ZONE_FAR_FAR_RPM
-                                + distanceRatio * (2900 - Constants.LAUNCH_ZONE_FAR_FAR_RPM);
-
-                    } else if (distanceFeet < MID_ZONE_DISTANCE_FT) {
-                        //setLauncherFeedforward(31);
-                        rpm = Constants.LAUNCH_ZONE_MID_RPM;
-                    } else {
-                        //setLauncherFeedforward(31);
-                        double clampedDistance = Range.clip(distanceFeet, MID_ZONE_DISTANCE_FT, FAR_ZONE_DISTANCE_FT);
-                        double distanceRatio = (clampedDistance - MID_ZONE_DISTANCE_FT) / (FAR_ZONE_DISTANCE_FT - MID_ZONE_DISTANCE_FT);
-                        rpm = Constants.LAUNCH_ZONE_MID_RPM
-                                + distanceRatio * (Constants.LAUNCH_ZONE_FAR_RPM - Constants.LAUNCH_ZONE_MID_RPM);
-                    }
-
-                    telemetry.addData("Flywheel Distance (ft)", "%.2f", distanceFeet);
-                }
+            } else if (distanceFeet < MID_ZONE_DISTANCE_FT) {
+                rpm = Constants.LAUNCH_ZONE_MID_RPM;
+            } else {
+                double clampedDistance = Range.clip(distanceFeet, MID_ZONE_DISTANCE_FT, FAR_ZONE_DISTANCE_FT);
+                double distanceRatio = (clampedDistance - MID_ZONE_DISTANCE_FT) / (FAR_ZONE_DISTANCE_FT - MID_ZONE_DISTANCE_FT);
+                rpm = Constants.LAUNCH_ZONE_MID_RPM
+                        + distanceRatio * (Constants.LAUNCH_ZONE_FAR_RPM - Constants.LAUNCH_ZONE_MID_RPM);
             }
+
+            telemetry.addData("Flywheel Distance (ft)", "%.2f", distanceFeet);
         }
 
         if (targetRpm == 0 || result == null || !result.isValid()) {
@@ -228,6 +207,54 @@ public class FlywheelController {
         }
     }
 
+    public void update() { update(false); }
+    private double extractDistanceFeet(LLResult result) {
+        if (result != null && result.isValid()) {
+            List<LLResultTypes.FiducialResult> fiducials = result.getFiducialResults();
+            if (fiducials != null && !fiducials.isEmpty()) {
+                LLResultTypes.FiducialResult fid = fiducials.get(0);
+                Pose3D pose = fid.getRobotPoseTargetSpace();
+                Position position = pose != null ? pose.getPosition() : null;
+
+                if (position != null) {
+                    Position metersPosition = position.toUnit(DistanceUnit.METER);
+                    double xMeters = metersPosition.x;
+                    double yMeters = metersPosition.y;
+                    double zMeters = metersPosition.z;
+                    double distanceMeters = Math.sqrt(xMeters * xMeters + yMeters * yMeters + zMeters * zMeters);
+                    return distanceMeters * 3.28084;
+                }
+            }
+        }
+        return Double.NaN;
+    }
+
+    private double getSmoothedDistanceFeet(LLResult result) {
+        double distanceFeet = extractDistanceFeet(result);
+        if (Double.isFinite(distanceFeet)) {
+            limelightDistancesFeet.addLast(distanceFeet);
+            while (limelightDistancesFeet.size() > LIMELIGHT_DISTANCE_WINDOW) {
+                limelightDistancesFeet.removeFirst();
+            }
+            double sum = 0.0;
+            for (double sample : limelightDistancesFeet) {
+                sum += sample;
+            }
+            lastSmoothedDistanceFeet = sum / limelightDistancesFeet.size();
+            limelightHoldTimer.reset();
+            return lastSmoothedDistanceFeet;
+        }
+
+        if (Double.isFinite(lastSmoothedDistanceFeet)
+                && limelightHoldTimer.seconds() < LIMELIGHT_DISTANCE_HOLD_SECONDS) {
+            return lastSmoothedDistanceFeet;
+        }
+
+        limelightDistancesFeet.clear();
+        lastSmoothedDistanceFeet = Double.NaN;
+        return Double.NaN;
+    }
+
     private void stop() {
         targetRpm = 0.0;
         measuringSpinup = false;
@@ -240,7 +267,7 @@ public class FlywheelController {
         publishPanelsFlywheelTelemetry(targetRpm, getCurrentRpm());
     }
 
-    private void setFlywheelRpm(double rpm) {
+    public void setFlywheelRpm(double rpm) {
         if (rpm > 0 && targetRpm <= 0) {
             spinupSetpointRpm = rpm;
             spinupTimer.reset();

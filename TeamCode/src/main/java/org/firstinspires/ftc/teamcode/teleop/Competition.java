@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.teleop;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -35,6 +36,7 @@ public class Competition extends LinearOpMode {
         ShootingController shootingController = new ShootingController(robot, flywheelController, spindexerController, telemetry);
 
         boolean kickerStandToggled = false;
+        boolean manualRPMToggle = false;
 
         spindexerController.init();
 
@@ -83,24 +85,54 @@ public class Competition extends LinearOpMode {
             /// DPad Gamepad 1
             if (gamepad1.dpadUpWasPressed()) {
                 //flywheelController.adjustRpmTolerance(10.0);
-                Constants.LAUNCH_ZONE_FAR_FAR_RPM += 5;
+                //Constants.LAUNCH_ZONE_FAR_FAR_RPM += 5;
+                flywheelController.adjustLauncherFeedforward(1.0);
             }
 
             if (gamepad1.dpadDownWasPressed()) {
                 //flywheelController.adjustRpmTolerance(-10.0);
-                Constants.LAUNCH_ZONE_FAR_FAR_RPM -= 5;
-            }
-
-            if (gamepad1.dpadLeftWasPressed()) {
-                flywheelController.adjustLauncherFeedforward(1.0);
-            }
-
-            if (gamepad1.dpadRightWasPressed()) {
+                //Constants.LAUNCH_ZONE_FAR_FAR_RPM -= 5;
                 flywheelController.adjustLauncherFeedforward(-1.0);
             }
 
-            if (gamepad1.leftStickButtonWasPressed()) {
-                robot.setPowerDampener(0.5);
+            if (gamepad1.startWasPressed()) { manualRPMToggle = !manualRPMToggle; }
+
+//            if (gamepad1.dpadLeftWasPressed()) {
+//                turretTracker.disable();
+//                turretTarget -= 100;
+//                robot.turret.setTargetPosition(turretTarget);
+//                robot.turret.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//                robot.turret.setPower(0.40);
+//            }
+//
+//            if (gamepad1.dpadRightWasPressed()) {
+//                turretTracker.disable();
+//                turretTarget += 100;
+//                robot.turret.setTargetPosition(turretTarget);
+//                robot.turret.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//                robot.turret.setPower(0.40);
+//            }
+
+//            if (gamepad1.leftStickButtonWasPressed()) {
+//                robot.setPowerDampener(0.5);
+//            }
+//
+//            if (!turretTracker.isEnabled()) {
+//                telemetry.addData("Turret Position", turretTarget);
+//            } else {
+//                turretTarget = robot.turret.getCurrentPosition();
+//            }
+
+            if (gamepad1.aWasPressed()) {
+                flywheelController.setTargetRPM(Constants.LAUNCH_ZONE_MID_RPM);
+            }
+
+            if (gamepad1.yWasPressed()) {
+                flywheelController.setTargetRPM(Constants.LAUNCH_ZONE_FAR_RPM);
+            }
+
+            if (gamepad1.bWasPressed()) {
+                flywheelController.setTargetRPM(Constants.LAUNCH_ZONE_FAR_FAR_RPM);
             }
 
             /// GAMEPAD 2
@@ -188,10 +220,16 @@ public class Competition extends LinearOpMode {
             if (kickerStandToggled) {
                 robot.setColorOfBackLights(rgbIndicator.LEDColors.INDIGO);
             } else {
-                flywheelController.update();
+                flywheelController.update(manualRPMToggle);
                 spindexerController.update();
                 shootingController.update(false);
             };
+
+            if (gamepad1.left_bumper) {
+                robot.turret.setTargetPosition(0);
+                robot.turret.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                robot.turret.setPower(0.40);
+            }
 
             telemetry.addLine("--- FLYWHEEL DATA ---");
             telemetry.addData("Flywheel Tolerance", "%.0f rpm", flywheelController.getRpmTolerance());
