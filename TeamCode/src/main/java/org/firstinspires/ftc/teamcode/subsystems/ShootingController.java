@@ -50,6 +50,13 @@ public class ShootingController {
         shootState = ShootState.WAIT_FOR_SPINUP;
     }
 
+    public void stop() {
+        shootState = ShootState.IDLE;
+        artifactCount = 3;
+        robot.kicker.setPosition(Constants.KICKER_DOWN);
+        spindexerController.setPosition(0);
+    }
+
     public void update(boolean checkArtifacts) {
         if (!flywheelController.isEnabled() || flywheelController.getTargetRpm() <= 0) return;
         if (isInDeadZone()) shootState = ShootState.DEADZONE;
