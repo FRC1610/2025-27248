@@ -170,6 +170,7 @@ public class CompetitionTest extends LinearOpMode {
                 }
             }
 
+            /*
             ///  Gamepad 1 Toggle Kicker Stand
             if (gamepad1.rightBumperWasPressed()) {
                 if (kickerStandToggled) {
@@ -187,6 +188,8 @@ public class CompetitionTest extends LinearOpMode {
                 spindexerController.update();
                 shootingController.update(false);
             }
+
+             */
 
             telemetry.addLine("--- FLYWHEEL DATA ---");
             telemetry.addData("Flywheel Tolerance", "%.0f rpm", flywheelController.getRpmTolerance());

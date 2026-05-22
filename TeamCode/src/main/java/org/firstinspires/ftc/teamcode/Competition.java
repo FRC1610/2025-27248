@@ -27,9 +27,7 @@ public class Competition extends LinearOpMode {
     private boolean dpadLeftPreviouslyPressed = false;
     private boolean dpadRightPreviouslyPressed = false;
     private boolean gamepad1LeftStickPreviouslyPressed = false;
-
     private boolean leftStickPreviouslyPressed = false;
-
     private boolean rightStickPreviouslyPressed = false;
     private boolean dpadUpGamepad2PreviouslyPressed = false;
 
@@ -42,7 +40,6 @@ public class Competition extends LinearOpMode {
 
         boolean backButtonPreviouslyPressed = false;
         boolean rightBumperPreviouslyPressed = false;
-
 
         robot.init();  //Hardware configuration in RobotHardware.java
 
@@ -166,6 +163,8 @@ public class Competition extends LinearOpMode {
             boolean IntakeForwardPressed = gamepad2.right_bumper; //Check if button pressed
             boolean IntakeReversePressed = gamepad2.left_bumper; //Check if button pressed
 
+            gamepad2.rightBumperWasPressed();
+
             if (IntakeForwardPressed){
                 robot.runIntake(RobotHardware.IntakeDirection.IN);
             } else if (IntakeReversePressed) {
@@ -196,8 +195,6 @@ public class Competition extends LinearOpMode {
             leftStickPreviouslyPressed = leftStickDown;
             rightStickPreviouslyPressed = rightStickDown;
 
-
-
             if (shootingController.isIdle()) {
                 //Manual Lift Control
                 if (gamepad1.a) {
@@ -224,5 +221,4 @@ public class Competition extends LinearOpMode {
             telemetry.update();
         }
     }
-
 }
